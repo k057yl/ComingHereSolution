@@ -1,0 +1,64 @@
+﻿@page "/confirm"
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Подтвердите Email</h3>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+@if (string.IsNullOrEmpty(userId))
+{
+    <p>Ошибка: не передан userId.</p>
+}
+else
+{
+    <p>На вашу почту был отправлен код подтверждения.</p>
+    <input @bind="code" placeholder="Введите код подтверждения" />
+    <button @onclick="ConfirmEmailCode">Подтвердить</button>
+}
+
+@code {
+    private string userId = "";
+    private string code = "";
+    private string message = "";
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(Nav.Uri);
+        var queryParams = ParseQuery(uri.Query);
+        if (queryParams.TryGetValue("userId", out var id))
+        {
+            userId = id;
+        }
+    }
+
+    private Dictionary<string, string> ParseQuery(string queryString)
+    {
+        return queryString.TrimStart('?')
+            .Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => part.Split('='))
+            .Where(parts => parts.Length == 2)
+            .ToDictionary(parts => Uri.UnescapeDataString(parts[0]),
+                          parts => Uri.UnescapeDataString(parts[1]));
+    }
+
+    private async Task ConfirmEmailCode()
+    {
+        var confirmDto = new { UserId = userId, Code = code };
+        var response = await Http.PostAsJsonAsync("api/account/confirm", confirmDto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Email успешно подтверждён! Перенаправляем на страницу входа...";
+            await Task.Delay(1500);
+            Nav.NavigateTo("/login");
+        }
+        else
+        {
+            message = "Неверный код подтверждения.";
+        }
+    }
+}

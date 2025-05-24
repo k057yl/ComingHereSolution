@@ -1,0 +1,30 @@
+﻿@page "/userinfo"
+@inject HttpClient Http
+
+@if (userEmail == null)
+{
+    <p>Not logged in.</p>
+}
+else
+{
+    <p>Logged in as: @userEmail</p>
+}
+
+@code {
+    private string? userEmail;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync("api/account/me");
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserDto>();
+            userEmail = user?.Email;
+        }
+    }
+
+    private class UserDto
+    {
+        public string Email { get; set; }
+    }
+}

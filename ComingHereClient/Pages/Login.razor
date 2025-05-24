@@ -1,0 +1,36 @@
+﻿@page "/login"
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Login</h3>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+<input @bind="email" placeholder="Email" />
+<input type="password" @bind="password" placeholder="Password" />
+<button @onclick="LoginUser">Login</button>
+
+@code {
+    private string email;
+    private string password;
+    private string message;
+
+    private async Task LoginUser()
+    {
+        var loginDto = new { Email = email, Password = password };
+        var response = await Http.PostAsJsonAsync("api/account/login", loginDto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Login successful!";
+            Nav.NavigateTo("/");
+        }
+        else
+        {
+            message = "Login failed.";
+        }
+    }
+}

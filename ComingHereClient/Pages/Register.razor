@@ -1,0 +1,41 @@
+﻿@page "/register"
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Register</h3>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+<input @bind="email" placeholder="Email" />
+<input type="password" @bind="password" placeholder="Password" />
+<button @onclick="RegisterUser">Register</button>
+
+@code {
+    private string email;
+    private string password;
+    private string message;
+
+    private async Task RegisterUser()
+    {
+        var registerDto = new { Email = email, Password = password };
+        var response = await Http.PostAsJsonAsync("api/account/register", registerDto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<RegisterResult>();
+            Nav.NavigateTo($"/confirm?userId={Uri.EscapeDataString(result.UserId)}");
+        }
+        else
+        {
+            message = "Registration failed.";
+        }
+    }
+
+    private class RegisterResult
+    {
+        public string UserId { get; set; }
+    }
+}

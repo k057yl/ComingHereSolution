@@ -1,4 +1,5 @@
 ﻿@page "/register"
+@using ComingHereShared.DTO
 @inject HttpClient Http
 @inject NavigationManager Nav
 
@@ -9,17 +10,39 @@
     <p>@message</p>
 }
 
-<input @bind="email" placeholder="Email" />
-<input type="password" @bind="password" placeholder="Password" />
-<button @onclick="RegisterUser">Register</button>
+<div>
+    <input @bind="email" placeholder="Email" />
+</div>
+<div>
+    <input type="password" @bind="password" placeholder="Password" />
+</div>
+<div>
+    <input type="password" @bind="confirmPassword" placeholder="Confirm Password" />
+</div>
+<div>
+    <button @onclick="RegisterUser">Register</button>
+</div>
 
 @code {
     private string email;
     private string password;
+    private string confirmPassword;
     private string message;
 
     private async Task RegisterUser()
     {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            message = "Email and password are required.";
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            message = "Passwords do not match.";
+            return;
+        }
+
         var registerDto = new { Email = email, Password = password };
         var response = await Http.PostAsJsonAsync("api/account/register", registerDto);
 
@@ -32,10 +55,5 @@
         {
             message = "Registration failed.";
         }
-    }
-
-    private class RegisterResult
-    {
-        public string UserId { get; set; }
     }
 }

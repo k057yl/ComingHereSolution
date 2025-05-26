@@ -1,6 +1,8 @@
 ﻿@page "/login"
+@using ComingHereShared.DTO
 @inject HttpClient Http
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <h3>Login</h3>
 
@@ -25,8 +27,19 @@
 
         if (response.IsSuccessStatusCode)
         {
-            message = "Login successful!";
-            Nav.NavigateTo("/");
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            if (result?.Token != null)
+            {
+                // Сохраняем токен в localStorage
+                await JS.InvokeVoidAsync("localStorage.setItem", "authToken", result.Token);
+
+                message = "Login successful!";
+                Nav.NavigateTo("/");
+            }
+            else
+            {
+                message = "Token is missing in response.";
+            }
         }
         else
         {

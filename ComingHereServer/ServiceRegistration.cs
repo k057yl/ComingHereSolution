@@ -12,6 +12,8 @@ namespace ComingHereServer
             services.AddMemoryCache();
 
             services.AddHttpContextAccessor();
+
+            
         }
     }
 }

@@ -1,7 +1,51 @@
 ﻿@page "/"
+@using ComingHereShared.DTO
 @inject HttpClient Http
-@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
 
-<PageTitle>Home</PageTitle>
+<h3>Пользователи</h3>
 
-<h3>Authentication Demo</h3>
+<AuthorizeView>
+    <Authorized>
+        Привет, @context.User.Identity.Name!
+    </Authorized>
+    <NotAuthorized>
+        Пожалуйста, войдите.
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (users == null)
+{
+    <p>Загрузка...</p>
+}
+else if (!users.Any())
+{
+    <p>Пользователи не найдены.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr><th>Id</th><th>Имя пользователя</th><th>Email</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<UserInfoDto>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Http.GetFromJsonAsync<List<UserInfoDto>>("api/account/users");
+    }
+}

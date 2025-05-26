@@ -3,6 +3,10 @@ using ComingHereShared.DTO;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ComingHereServer.Controllers
 {
@@ -15,18 +19,21 @@ namespace ComingHereServer.Controllers
         private readonly EmailService _emailService;
         private readonly ConfirmationCodeGenerator _codeGenerator;
         private readonly IMemoryCache _memoryCache;
+        private readonly IConfiguration _configuration;
 
         public AccountController(UserManager<IdentityUser> userManager,
                                  SignInManager<IdentityUser> signInManager,
                                  EmailService emailService,
                                  ConfirmationCodeGenerator codeGenerator,
-                                 IMemoryCache memoryCache)
+                                 IMemoryCache memoryCache,
+                                 IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
             _codeGenerator = codeGenerator;
             _memoryCache = memoryCache;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -47,13 +54,30 @@ namespace ComingHereServer.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto model)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
-            if (!result.Succeeded)
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
                 return Unauthorized();
 
-            return Ok();
+            var claims = new[]
+            {
+        new Claim(ClaimTypes.Name, user.Email)
+    };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("123456789987456321123654789987456321"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds
+            );
+
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                email = user.Email
+            });
         }
 
         [HttpGet("me")]
@@ -88,6 +112,13 @@ namespace ComingHereServer.Controllers
             }
 
             return BadRequest("Срок действия кода истёк или он не найден");
+        }
+
+        [HttpGet("users")]
+        public IActionResult GetUsers()
+        {
+            var users = _userManager.Users.Select(u => new { u.Id, u.UserName, u.Email }).ToList();
+            return Ok(users);
         }
     }
 }

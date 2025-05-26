@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+﻿@using ComingHereShared.DTO
+@inherits LayoutComponentBase
+@inject HttpClient Http
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -7,7 +10,11 @@
     <main>
         <div class="top-row px-4 auth">
             <LoginDisplay />
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+
+            @if (isAuthenticated)
+            {
+                <span class="ms-3">Привет, @userEmail!</span>
+            }
         </div>
 
         <article class="content px-4">
@@ -15,3 +22,31 @@
         </article>
     </main>
 </div>
+
+@code {
+    private bool isAuthenticated = false;
+    private string? userEmail;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var user = await Http.GetFromJsonAsync<UserInfoDto>("api/account/me");
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                userEmail = user.Email;
+                isAuthenticated = true;
+            }
+            else
+            {
+                isAuthenticated = false;
+                userEmail = null;
+            }
+        }
+        catch
+        {
+            isAuthenticated = false;
+            userEmail = null;
+        }
+    }
+}

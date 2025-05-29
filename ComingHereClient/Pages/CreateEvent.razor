@@ -1,0 +1,71 @@
+﻿@page "/create-event"
+@using ComingHereShared.DTO
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Создать событие</h3>
+
+<EditForm Model="newEvent" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Название</label>
+        <InputText id="name" class="form-control" @bind-Value="newEvent.Name" />
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Описание</label>
+        <InputTextArea id="description" class="form-control" @bind-Value="newEvent.Description" />
+    </div>
+    <div class="mb-3">
+        <label for="startTime" class="form-label">Дата и время начала</label>
+        <InputDate id="startTime" class="form-control" @bind-Value="newEvent.StartTime" />
+    </div>
+    <div class="mb-3">
+        <label for="endTime" class="form-label">Дата и время окончания</label>
+        <InputDate id="endTime" class="form-control" @bind-Value="newEvent.EndTime" />
+    </div>
+    <div class="mb-3">
+        <label for="location" class="form-label">Место</label>
+        <InputText id="location" class="form-control" @bind-Value="newEvent.Location" />
+    </div>
+    <div class="mb-3">
+        <label for="latitude" class="form-label">Широта</label>
+        <InputNumber id="latitude" class="form-control" @bind-Value="newEvent.Latitude" />
+    </div>
+    <div class="mb-3">
+        <label for="longitude" class="form-label">Долгота</label>
+        <InputNumber id="longitude" class="form-control" @bind-Value="newEvent.Longitude" />
+    </div>
+    <div class="mb-3">
+        <label for="price" class="form-label">Цена</label>
+        <InputNumber id="price" class="form-control" @bind-Value="newEvent.Price" />
+    </div>
+    <div class="mb-3">
+        <label for="maxAttendees" class="form-label">Макс. участников</label>
+        <InputNumber id="maxAttendees" class="form-control" @bind-Value="newEvent.MaxAttendees" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Создать</button>
+</EditForm>
+
+@code {
+    private EventCreateDto newEvent = new EventCreateDto
+    {
+        StartTime = DateTime.Now
+    };
+
+    private async Task HandleValidSubmit()
+    {
+        var response = await Http.PostAsJsonAsync("api/event", newEvent);
+        if (response.IsSuccessStatusCode)
+        {
+            Nav.NavigateTo("/");
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Ошибка создания события: {error}");
+        }
+    }
+}

@@ -55,5 +55,18 @@ namespace ComingHereClient.Provider
             }
             return Convert.FromBase64String(base64);
         }
+        //**********
+        public async Task MarkUserAsAuthenticated(string token)
+        {
+            await _js.InvokeVoidAsync("localStorage.setItem", "authToken", token);
+            NotifyAuthenticationStateChanged();
+        }
+
+        public async Task MarkUserAsLoggedOut()
+        {
+            await _js.InvokeVoidAsync("localStorage.removeItem", "authToken");
+            _http.DefaultRequestHeaders.Authorization = null;
+            NotifyAuthenticationStateChanged();
+        }
     }
 }

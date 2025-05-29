@@ -1,5 +1,7 @@
-﻿@inject NavigationManager Nav
+﻿@using ComingHereClient.Services
+@inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AuthService AuthService
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -39,8 +41,15 @@
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="create-event">
+                <span class="bi bi-calendar-plus-fill-nav-menu" aria-hidden="true"></span> Создать событие
+            </NavLink>
+        </div>
     </nav>
 </div>
+
+@implements IDisposable
 
 @code {
     private bool collapseNavMenu = true;
@@ -51,11 +60,22 @@
 
     protected override async Task OnInitializedAsync()
     {
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         isAuthenticated = user.Identity?.IsAuthenticated ?? false;
-        if (isAuthenticated)
-            userEmail = user.Identity?.Name;
+        userEmail = user.Identity?.Name;
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        var authState = await task;
+        var user = authState.User;
+        isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        userEmail = user.Identity?.Name;
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void ToggleNavMenu()
@@ -65,7 +85,14 @@
 
     private async Task Logout()
     {
-        // Если используешь AuthService, то вызови Logout здесь
-        Nav.NavigateTo("/logout");
+        await AuthService.Logout();
+        isAuthenticated = false;
+        userEmail = null;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
     }
 }

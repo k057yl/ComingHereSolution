@@ -43,7 +43,7 @@
             return;
         }
 
-        var registerDto = new { Email = email, Password = password };
+        var registerDto = new RegisterDto { Email = email, Password = password };
         var response = await Http.PostAsJsonAsync("api/account/register", registerDto);
 
         if (response.IsSuccessStatusCode)
@@ -53,7 +53,8 @@
         }
         else
         {
-            message = "Registration failed.";
+            var errorText = await response.Content.ReadAsStringAsync();
+            message = $"Registration failed: {errorText}";
         }
     }
 }

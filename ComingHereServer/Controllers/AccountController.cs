@@ -1,12 +1,12 @@
 ﻿using ComingHereServer.Services;
 using ComingHereShared.DTO;
+using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace ComingHereServer.Controllers
 {
@@ -14,15 +14,15 @@ namespace ComingHereServer.Controllers
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly EmailService _emailService;
         private readonly ConfirmationCodeGenerator _codeGenerator;
         private readonly IMemoryCache _memoryCache;
         private readonly IConfiguration _configuration;
 
-        public AccountController(UserManager<IdentityUser> userManager,
-                                 SignInManager<IdentityUser> signInManager,
+        public AccountController(UserManager<ApplicationUser> userManager,
+                                 SignInManager<ApplicationUser> signInManager,
                                  EmailService emailService,
                                  ConfirmationCodeGenerator codeGenerator,
                                  IMemoryCache memoryCache,
@@ -39,7 +39,7 @@ namespace ComingHereServer.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
@@ -62,10 +62,12 @@ namespace ComingHereServer.Controllers
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.Name, user.Email)
-    };
+                new Claim(ClaimTypes.Name, user.Email)
+            };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("123456789987456321123654789987456321"));
+            var keyString = _configuration["Jwt:Key"];
+            var keyBytes = Convert.FromBase64String(keyString);
+            var key = new SymmetricSecurityKey(keyBytes);
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
                 claims: claims,

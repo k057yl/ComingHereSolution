@@ -15,21 +15,21 @@ namespace ComingHereServer.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        //private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly EmailService _emailService;
         private readonly ConfirmationCodeGenerator _codeGenerator;
         private readonly IMemoryCache _memoryCache;
         private readonly IConfiguration _configuration;
 
         public AccountController(UserManager<ApplicationUser> userManager,
-                                 SignInManager<ApplicationUser> signInManager,
+                                 //SignInManager<ApplicationUser> signInManager,
                                  EmailService emailService,
                                  ConfirmationCodeGenerator codeGenerator,
                                  IMemoryCache memoryCache,
                                  IConfiguration configuration)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+            //_signInManager = signInManager;
             _emailService = emailService;
             _codeGenerator = codeGenerator;
             _memoryCache = memoryCache;
@@ -62,7 +62,9 @@ namespace ComingHereServer.Controllers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Email)
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),            // ⬅️ ВАЖНО
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Email)                      // для UI
             };
 
             var keyString = _configuration["Jwt:Key"];
@@ -70,6 +72,8 @@ namespace ComingHereServer.Controllers
             var key = new SymmetricSecurityKey(keyBytes);
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds

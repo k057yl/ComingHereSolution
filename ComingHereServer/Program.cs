@@ -19,7 +19,9 @@ builder.Services.AddIdentity<ComingHereShared.Entities.ApplicationUser, Identity
 .AddDefaultTokenProviders();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+
+var key = Convert.FromBase64String(jwtSettings["Key"]);
+//var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -53,7 +55,9 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://localhost:7184")
+        policy.WithOrigins("https://localhost:7184",
+                           "http://localhost:5000",
+                           "http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

@@ -1,7 +1,9 @@
 ﻿@page "/create-event"
 @using ComingHereShared.DTO
-@inject HttpClient Http
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Nav
+@using System.Text.Json;
 
 <h3>Создать событие</h3>
 
@@ -55,9 +57,35 @@
         StartTime = DateTime.Now
     };
 
+    private string? authToken;
+    private string? userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        authToken = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+
+        if (!string.IsNullOrEmpty(authToken))
+        {
+            userName = ExtractUserNameFromJwt(authToken) ?? "неизвестен";
+        }
+        else
+        {
+            userName = "аноним";
+        }
+    }
+
     private async Task HandleValidSubmit()
     {
-        var response = await Http.PostAsJsonAsync("api/event", newEvent);
+        if (string.IsNullOrEmpty(authToken))
+        {
+            Console.WriteLine("⚠️ Токен не найден в localStorage.");
+            return;
+        }
+
+        var client = HttpClientFactory.CreateClient("AuthorizedClient");
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
+        var response = await client.PostAsJsonAsync("api/event", newEvent);
+
         if (response.IsSuccessStatusCode)
         {
             Nav.NavigateTo("/");
@@ -65,7 +93,42 @@
         else
         {
             var error = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Ошибка создания события: {error}");
+            Console.WriteLine($"❌ Ошибка создания события: {response.StatusCode} — {error}");
         }
+    }
+
+    // Парсим payload JWT и пытаемся достать username из ключей с разными вариантами
+    private string? ExtractUserNameFromJwt(string jwt)
+    {
+        var parts = jwt.Split('.');
+        if (parts.Length < 2) return null;
+
+        var payloadJson = System.Text.Encoding.UTF8.GetString(PadBase64(parts[1]));
+        using var doc = JsonDocument.Parse(payloadJson);
+        var root = doc.RootElement;
+
+        foreach (var prop in root.EnumerateObject())
+        {
+            var key = prop.Name.ToLowerInvariant();
+            if (key.EndsWith("/name") || key == "name" || key == "email" || key == "sub")
+            {
+                if (prop.Value.ValueKind == JsonValueKind.String)
+                    return prop.Value.GetString();
+            }
+        }
+
+        return null;
+    }
+
+    // JWT payload может быть без паддинга — добавляем необходимое
+    private byte[] PadBase64(string base64)
+    {
+        base64 = base64.Replace('-', '+').Replace('_', '/');
+        switch (base64.Length % 4)
+        {
+            case 2: base64 += "=="; break;
+            case 3: base64 += "="; break;
+        }
+        return Convert.FromBase64String(base64);
     }
 }

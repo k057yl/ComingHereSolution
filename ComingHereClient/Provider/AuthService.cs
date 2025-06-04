@@ -1,7 +1,8 @@
-﻿using ComingHereShared.DTO;
+﻿using ComingHereClient.Provider;
+using ComingHereShared.DTO;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using System.Net.Http.Json;
-using ComingHereClient.Provider;
 
 namespace ComingHereClient.Services
 {
@@ -10,6 +11,7 @@ namespace ComingHereClient.Services
         private readonly HttpClient _http;
         private readonly NavigationManager _navigationManager;
         private readonly CustomAuthStateProvider _authStateProvider;
+        private readonly IJSRuntime _js;
 
         private string? _token;
         public string? UserEmail { get; private set; }
@@ -17,11 +19,13 @@ namespace ComingHereClient.Services
 
         public AuthService(HttpClient http,
                            NavigationManager navigationManager,
-                           CustomAuthStateProvider authStateProvider)
+                           CustomAuthStateProvider authStateProvider,
+                           IJSRuntime js)
         {
             _http = http;
             _navigationManager = navigationManager;
             _authStateProvider = authStateProvider;
+            _js = js;
         }
 
         public async Task<bool> Login(string email, string password)
@@ -38,6 +42,8 @@ namespace ComingHereClient.Services
                 UserEmail = result.Email;
                 _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
+                await _js.InvokeVoidAsync("localStorage.setItem", "authToken", _token);
+
                 await _authStateProvider.MarkUserAsAuthenticated(_token);
                 return true;
             }
@@ -50,8 +56,9 @@ namespace ComingHereClient.Services
             UserEmail = null;
             _http.DefaultRequestHeaders.Authorization = null;
 
-            await _authStateProvider.MarkUserAsLoggedOut();
+            await _js.InvokeVoidAsync("localStorage.removeItem", "authToken");
 
+            await _authStateProvider.MarkUserAsLoggedOut();
             _navigationManager.NavigateTo("/");
         }
     }

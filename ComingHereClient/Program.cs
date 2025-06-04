@@ -14,7 +14,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 
-builder.Services.AddScoped<AuthorizationMessageHandler>();
+builder.Services.AddTransient<AuthorizationMessageHandler>();
 
 builder.Services.AddHttpClient("AuthorizedClient", client =>
 {

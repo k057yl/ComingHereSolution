@@ -5,12 +5,25 @@
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
-        public DateTime StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
+        private DateTime _startTime;
+        public DateTime StartTime
+        {
+            get => _startTime;
+            set => _startTime = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        }
+
+        private DateTime? _endTime;
+        public DateTime? EndTime
+        {
+            get => _endTime;
+            set => _endTime = value.HasValue
+                ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
+                : (DateTime?)null;
+        }
         public string Location { get; set; } = null!;
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public decimal? Price { get; set; } // null — бесплатно
+        public decimal? Price { get; set; }
         public int? MaxAttendees { get; set; }
 
         public string OrganizerId { get; set; } = null!;

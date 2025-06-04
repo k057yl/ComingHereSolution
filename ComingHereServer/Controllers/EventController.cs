@@ -12,9 +12,9 @@ namespace ComingHereServer.Controllers
     public class EventController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public EventController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public EventController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -26,7 +26,7 @@ namespace ComingHereServer.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-                return Unauthorized();
+                return Unauthorized("Пользователь не найден. Проверь, есть ли claim 'sub' в JWT.");
 
             var newEvent = new Event
             {

@@ -118,5 +118,53 @@ namespace ComingHereServer.Controllers
 
             return Ok(dtos);
         }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteEvent(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var ev = await _context.Events.Include(e => e.Photos).FirstOrDefaultAsync(e => e.Id == id);
+            if (ev == null) return NotFound();
+
+            if (ev.OrganizerId != user.Id)
+                return Forbid("Ты не можешь удалять чужие события");
+
+            _context.EventPhotos.RemoveRange(ev.Photos);
+            _context.Events.Remove(ev);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEvent(int id, EventCreateDto dto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var ev = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+            if (ev == null) return NotFound();
+
+            if (ev.OrganizerId != user.Id)
+                return Forbid("Редактировать можно только свои события");
+
+            ev.Name = dto.Name;
+            ev.Description = dto.Description;
+            ev.StartTime = dto.StartTime;
+            ev.EndTime = dto.EndTime;
+            ev.Location = dto.Location;
+            ev.Latitude = dto.Latitude;
+            ev.Longitude = dto.Longitude;
+            ev.Price = dto.Price;
+            ev.MaxAttendees = dto.MaxAttendees;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }

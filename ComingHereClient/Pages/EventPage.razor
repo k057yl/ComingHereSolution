@@ -2,6 +2,7 @@
 @using ComingHereShared.DTO
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <h3>Все события</h3>
 
@@ -26,6 +27,7 @@ else
                 <th>Цена</th>
                 <th>Макс. участников</th>
                 <th>Фото</th>
+                <th>Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -38,7 +40,7 @@ else
                     <td>@(ev.EndTime != null ? ev.EndTime.Value.ToLocalTime().ToString("g") : "-")</td>
                     <td>
                         <div>@ev.Location (@ev.Latitude, @ev.Longitude)</div>
-                        <div id="map-@ev.Id" style="height: 150px; width: 250px;"></div>
+                        <div id="map-@ev.Id" style="height: 200px; width: 200px;"></div>
                     </td>
                     <td>@(ev.Price != null ? $"{ev.Price} Грн" : "-")</td>
                     <td>@(ev.MaxAttendees?.ToString() ?? "-")</td>
@@ -52,6 +54,10 @@ else
                             <span>—</span>
                         }
                     </td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => EditEvent(ev.Id)">✏️</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(ev.Id)">🗑️</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -61,6 +67,7 @@ else
 @code {
     private List<EventDto>? events;
     private bool isLoading = true;
+    private bool shouldRenderMaps = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,17 +81,54 @@ else
             Console.WriteLine($"Ошибка при загрузке событий: {ex.Message}");
             events = null;
         }
+
         isLoading = false;
+        shouldRenderMaps = true;
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && events != null)
+        if (shouldRenderMaps && events != null)
         {
             foreach (var ev in events)
             {
-                await JS.InvokeVoidAsync("startMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
+                await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
+            }
+
+            shouldRenderMaps = false;
+        }
+    }
+
+    private async Task DeleteEvent(int id)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", $"Удалить событие #{id}?"))
+            return;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("AuthorizedClient");
+            var response = await client.DeleteAsync($"api/event/{id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                events = events?.Where(e => e.Id != id).ToList();
+                StateHasChanged();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Ошибка удаления: {response.StatusCode} — {error}");
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"💥 Исключение при удалении: {ex.Message}");
+        }
+    }
+
+    private void EditEvent(int id)
+    {
+        Nav.NavigateTo($"/edit-event/{id}");
     }
 }

@@ -4,6 +4,7 @@ using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ComingHereServer.Controllers
 {
@@ -46,6 +47,76 @@ namespace ComingHereServer.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { newEvent.Id });
+        }
+
+        [HttpPost("{eventId}/upload-photo")]
+        [Authorize]
+        public async Task<IActionResult> UploadPhoto(int eventId, IFormFile photo)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            var ev = await _context.Events.FindAsync(eventId);
+            if (ev == null)
+                return NotFound("Событие не найдено.");
+
+            if (photo == null || photo.Length == 0)
+                return BadRequest("Фото не загружено.");
+
+            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+            if (!Directory.Exists(uploadsPath))
+                Directory.CreateDirectory(uploadsPath);
+
+            var fileName = $"{eventId}_{photo.FileName}";
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            using (var stream = System.IO.File.Create(filePath))
+                await photo.CopyToAsync(stream);
+
+            var accessiblePath = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+
+            var photoEntity = new EventPhoto
+            {
+                EventId = eventId,
+                PhotoUrl = accessiblePath
+            };
+
+            _context.EventPhotos.Add(photoEntity);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { filePath = accessiblePath });
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetEvents()
+        {
+            var events = await _context.Events
+                .AsNoTracking()
+                .Include(e => e.Photos)
+                .ToListAsync();
+
+            var dtos = events.Select(ev => new EventDto
+            {
+                Id = ev.Id,
+                Name = ev.Name,
+                Description = ev.Description,
+                StartTime = ev.StartTime,
+                EndTime = ev.EndTime,
+                Location = ev.Location,
+                Latitude = ev.Latitude,
+                Longitude = ev.Longitude,
+                Price = ev.Price,
+                MaxAttendees = ev.MaxAttendees,
+                Photos = ev.Photos.Select(p => new EventPhotoDto
+                {
+                    Id = p.Id,
+                    PhotoUrl = p.PhotoUrl
+                }).ToList()
+            }).ToList();
+
+            return Ok(dtos);
         }
     }
 }

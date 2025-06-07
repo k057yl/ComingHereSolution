@@ -1,0 +1,90 @@
+﻿@page "/events"
+@using ComingHereShared.DTO
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JS
+
+<h3>Все события</h3>
+
+@if (isLoading)
+{
+    <p>Загрузка...</p>
+}
+else if (events == null || !events.Any())
+{
+    <p>События не найдены.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Начало</th>
+                <th>Окончание</th>
+                <th>Место (с картой)</th>
+                <th>Цена</th>
+                <th>Макс. участников</th>
+                <th>Фото</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in events)
+            {
+                <tr>
+                    <td>@ev.Name</td>
+                    <td>@ev.Description</td>
+                    <td>@ev.StartTime.ToLocalTime().ToString("g")</td>
+                    <td>@(ev.EndTime != null ? ev.EndTime.Value.ToLocalTime().ToString("g") : "-")</td>
+                    <td>
+                        <div>@ev.Location (@ev.Latitude, @ev.Longitude)</div>
+                        <div id="map-@ev.Id" style="height: 150px; width: 250px;"></div>
+                    </td>
+                    <td>@(ev.Price != null ? $"{ev.Price} Грн" : "-")</td>
+                    <td>@(ev.MaxAttendees?.ToString() ?? "-")</td>
+                    <td>
+                        @if (ev.Photos?.Count > 0)
+                        {
+                            <img src="@ev.Photos[0].PhotoUrl" alt="Фото" width="100" />
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<EventDto>? events;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient("AuthorizedClient");
+        try
+        {
+            events = await client.GetFromJsonAsync<List<EventDto>>("api/event");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при загрузке событий: {ex.Message}");
+            events = null;
+        }
+        isLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && events != null)
+        {
+            foreach (var ev in events)
+            {
+                await JS.InvokeVoidAsync("startMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
+            }
+        }
+    }
+}

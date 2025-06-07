@@ -14,6 +14,7 @@ namespace ComingHereServer.Data
 
         public DbSet<Event> Events { get; set; }
         public DbSet<EventAttendee> EventAttendees { get; set; }
+        public DbSet<EventPhoto> EventPhotos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -28,6 +29,12 @@ namespace ComingHereServer.Data
                 .HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId);
+
+            builder.Entity<EventPhoto>()
+                .HasOne(p => p.Event)
+                .WithMany(e => e.Photos)
+                .HasForeignKey(p => p.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

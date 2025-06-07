@@ -1,0 +1,97 @@
+﻿@page "/upload-photo/{EventId:int}"
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<h3>Загрузить фото</h3>
+
+<InputFile OnChange="OnFileSelected" disabled="@isUploading" />
+
+@if (selectedFileName != null)
+{
+    <p>Выбран файл: <b>@selectedFileName</b></p>
+    <button class="btn btn-primary" @onclick="UploadFile" disabled="@isUploading">Сохранить</button>
+}
+
+@if (isUploading)
+{
+    <p>Загружаю...</p>
+}
+
+@if (!string.IsNullOrEmpty(uploadedUrl))
+{
+    <p>✅ Загружено: <a href="@uploadedUrl" target="_blank">@uploadedUrl</a></p>
+    <img src="@uploadedUrl" style="max-width: 300px;" />
+}
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private IBrowserFile? selectedFile;
+    private string? selectedFileName;
+    private bool isUploading = false;
+    private string? uploadedUrl;
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        selectedFileName = selectedFile?.Name;
+        uploadedUrl = null;
+    }
+
+    private async Task UploadFile()
+    {
+        if (selectedFile == null) return;
+
+        isUploading = true;
+        uploadedUrl = null;
+
+        try
+        {
+            var buffer = new byte[selectedFile.Size];
+            await selectedFile.OpenReadStream(10 * 1024 * 1024).ReadAsync(buffer);
+
+            var content = new MultipartFormDataContent();
+
+            var fileContent = new ByteArrayContent(buffer);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+
+            content.Add(fileContent, "photo", selectedFile.Name);
+
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("⚠️ Токен не найден в localStorage.");
+                isUploading = false;
+                return;
+            }
+
+            var client = HttpClientFactory.CreateClient("AuthorizedClient");
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.PostAsync($"api/event/{EventId}/upload-photo", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var resultJson = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                uploadedUrl = resultJson?["filePath"];
+                selectedFile = null;
+                selectedFileName = null;
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Ошибка загрузки: {response.StatusCode} — {error}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Исключение при загрузке: {ex.Message}");
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+}

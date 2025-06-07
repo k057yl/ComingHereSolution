@@ -26,6 +26,8 @@
         public decimal? Price { get; set; }
         public int? MaxAttendees { get; set; }
 
+        public ICollection<EventPhoto> Photos { get; set; } = new List<EventPhoto>();
+
         public string OrganizerId { get; set; } = null!;
         public ApplicationUser Organizer { get; set; } = null!;
 

@@ -31,6 +31,9 @@
         <label for="location" class="form-label">Место</label>
         <InputText id="location" class="form-control" @bind-Value="newEvent.Location" />
     </div>
+
+    <div id="map" style="height: 400px; margin-bottom: 15px;"></div>
+
     <div class="mb-3">
         <label for="latitude" class="form-label">Широта</label>
         <InputNumber id="latitude" class="form-control" @bind-Value="newEvent.Latitude" />
@@ -54,7 +57,9 @@
 @code {
     private EventCreateDto newEvent = new EventCreateDto
     {
-        StartTime = DateTime.Now
+        StartTime = DateTime.Now,
+        Latitude = 55.75,   // Москва дефолт
+        Longitude = 37.61
     };
 
     private string? authToken;
@@ -65,13 +70,33 @@
         authToken = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
 
         if (!string.IsNullOrEmpty(authToken))
-        {
             userName = ExtractUserNameFromJwt(authToken) ?? "неизвестен";
-        }
         else
-        {
             userName = "аноним";
+    }
+
+    private DotNetObjectReference<CreateEvent>? dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("startMap", newEvent.Latitude, newEvent.Longitude, dotNetRef);
         }
+    }
+
+    public void Dispose()
+    {
+        dotNetRef?.Dispose();
+    }
+
+    [JSInvokable]
+    public void UpdateCoordinates(double lat, double lng)
+    {
+        newEvent.Latitude = lat;
+        newEvent.Longitude = lng;
+        StateHasChanged();
     }
 
     private async Task HandleValidSubmit()
@@ -82,13 +107,25 @@
             return;
         }
 
+        Console.WriteLine("📤 Отправляем DTO:");
+        Console.WriteLine(JsonSerializer.Serialize(newEvent));
+
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
         var response = await client.PostAsJsonAsync("api/event", newEvent);
 
         if (response.IsSuccessStatusCode)
         {
-            Nav.NavigateTo("/");
+            var created = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
+            if (created != null && created.TryGetValue("id", out var eventId))
+            {
+                Nav.NavigateTo($"/upload-photo/{eventId}");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ Не удалось получить ID события из ответа.");
+                Nav.NavigateTo("/");
+            }
         }
         else
         {
@@ -97,7 +134,6 @@
         }
     }
 
-    // Парсим payload JWT и пытаемся достать username из ключей с разными вариантами
     private string? ExtractUserNameFromJwt(string jwt)
     {
         var parts = jwt.Split('.');
@@ -116,11 +152,9 @@
                     return prop.Value.GetString();
             }
         }
-
         return null;
     }
 
-    // JWT payload может быть без паддинга — добавляем необходимое
     private byte[] PadBase64(string base64)
     {
         base64 = base64.Replace('-', '+').Replace('_', '/');

@@ -166,5 +166,28 @@ namespace ComingHereServer.Controllers
 
             return Ok();
         }
+
+        [HttpGet("active")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetActiveEvents()
+        {
+            var now = DateTime.UtcNow;
+
+            var events = await _context.Events
+                .Where(e => e.EndTime == null || e.EndTime > now)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var dtos = events.Select(ev => new EventDto
+            {
+                Id = ev.Id,
+                Name = ev.Name,
+                Description = ev.Description,
+                Latitude = ev.Latitude,
+                Longitude = ev.Longitude
+            }).ToList();
+
+            return Ok(dtos);
+        }
     }
 }

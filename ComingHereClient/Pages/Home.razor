@@ -1,51 +1,51 @@
 ﻿@page "/"
+@using ComingHereClient.Services
 @using ComingHereShared.DTO
-@inject HttpClient Http
-@inject AuthenticationStateProvider AuthProvider
+@using Microsoft.Extensions.Localization
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JS
+@inject LocalizationService Loc
 
-<h3>Пользователи</h3>
+<h1>@Loc["Hello"]</h1>
 
-<AuthorizeView>
-    <Authorized>
-        Привет, @context.User.Identity.Name!
-    </Authorized>
-    <NotAuthorized>
-        Пожалуйста, войдите.
-    </NotAuthorized>
-</AuthorizeView>
-
-@if (users == null)
+@if (isLoading)
 {
-    <p>Загрузка...</p>
-}
-else if (!users.Any())
-{
-    <p>Пользователи не найдены.</p>
+    <p class="text-center">Loading...</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr><th>Id</th><th>Имя пользователя</th><th>Email</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var user in users)
-            {
-                <tr>
-                    <td>@user.Id</td>
-                    <td>@user.UserName</td>
-                    <td>@user.Email</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div id="all-events-map" style="height: 500px; width: 100%;"></div>
 }
 
 @code {
-    private List<UserInfoDto>? users;
+    private List<EventDto>? activeEvents;
+    private bool isLoading = true;
+    private bool shouldRenderMap = false;
 
     protected override async Task OnInitializedAsync()
     {
-        users = await Http.GetFromJsonAsync<List<UserInfoDto>>("api/account/users");
+        var client = HttpClientFactory.CreateClient("AuthorizedClient");
+
+        try
+        {
+            activeEvents = await client.GetFromJsonAsync<List<EventDto>>("api/event/active");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при загрузке активных событий: {ex.Message}");
+            activeEvents = null;
+        }
+
+        isLoading = false;
+        shouldRenderMap = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (shouldRenderMap && activeEvents != null && activeEvents.Any())
+        {
+            shouldRenderMap = false;
+            await JS.InvokeVoidAsync("renderEventMarkers", "all-events-map", activeEvents);
+        }
     }
 }

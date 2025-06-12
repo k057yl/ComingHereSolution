@@ -5,61 +5,77 @@
 @inject NavigationManager Nav
 @using System.Text.Json;
 
-<h3>Создать событие</h3>
+<h3 class="text-center mb-4">Создать событие</h3>
 
-<EditForm Model="newEvent" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="d-flex justify-content-center">
+    <EditForm Model="newEvent" OnValidSubmit="HandleValidSubmit" style="width: 50%; min-height: 100vh;">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div class="mb-3">
-        <label for="name" class="form-label">Название</label>
-        <InputText id="name" class="form-control" @bind-Value="newEvent.Name" />
-    </div>
-    <div class="mb-3">
-        <label for="description" class="form-label">Описание</label>
-        <InputTextArea id="description" class="form-control" @bind-Value="newEvent.Description" />
-    </div>
-    <div class="mb-3">
-        <label for="startTime" class="form-label">Дата и время начала</label>
-        <InputDate id="startTime" class="form-control" @bind-Value="newEvent.StartTime" />
-    </div>
-    <div class="mb-3">
-        <label for="endTime" class="form-label">Дата и время окончания</label>
-        <InputDate id="endTime" class="form-control" @bind-Value="newEvent.EndTime" />
-    </div>
-    <div class="mb-3">
-        <label for="location" class="form-label">Место</label>
-        <InputText id="location" class="form-control" @bind-Value="newEvent.Location" />
-    </div>
+        <div class="p-3">
 
-    <div id="map" style="height: 400px; margin-bottom: 15px;"></div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Название</label>
+                <InputText id="name" class="form-control" @bind-Value="newEvent.Name" />
+            </div>
 
-    <div class="mb-3">
-        <label for="latitude" class="form-label">Широта</label>
-        <InputNumber id="latitude" class="form-control" @bind-Value="newEvent.Latitude" />
-    </div>
-    <div class="mb-3">
-        <label for="longitude" class="form-label">Долгота</label>
-        <InputNumber id="longitude" class="form-control" @bind-Value="newEvent.Longitude" />
-    </div>
-    <div class="mb-3">
-        <label for="price" class="form-label">Цена</label>
-        <InputNumber id="price" class="form-control" @bind-Value="newEvent.Price" />
-    </div>
-    <div class="mb-3">
-        <label for="maxAttendees" class="form-label">Макс. участников</label>
-        <InputNumber id="maxAttendees" class="form-control" @bind-Value="newEvent.MaxAttendees" />
-    </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Описание</label>
+                <InputTextArea id="description" class="form-control" @bind-Value="newEvent.Description" />
+            </div>
 
-    <button type="submit" class="btn btn-primary">Создать</button>
-</EditForm>
+            <div class="mb-3">
+                <label for="startTime" class="form-label">Дата и время начала</label>
+                <InputDate id="startTime" class="form-control" @bind-Value="newEvent.StartTime" />
+            </div>
+
+            <div class="mb-3">
+                <label for="endTime" class="form-label">Дата и время окончания</label>
+                <InputDate id="endTime" class="form-control" @bind-Value="newEvent.EndTime" />
+            </div>
+
+            <div class="mb-3">
+                <label for="location" class="form-label">Место</label>
+                <InputText id="location" class="form-control" @bind-Value="newEvent.Location" />
+            </div>
+
+            <div class="mb-4 d-flex justify-content-center">
+                <div id="map" style="height: 400px; width: 100%; max-width: 600px;"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="latitude" class="form-label">Широта</label>
+                <InputNumber id="latitude" class="form-control" @bind-Value="newEvent.Latitude" />
+            </div>
+
+            <div class="mb-3">
+                <label for="longitude" class="form-label">Долгота</label>
+                <InputNumber id="longitude" class="form-control" @bind-Value="newEvent.Longitude" />
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Цена</label>
+                <InputNumber id="price" class="form-control" @bind-Value="newEvent.Price" />
+            </div>
+
+            <div class="mb-3">
+                <label for="maxAttendees" class="form-label">Макс. участников</label>
+                <InputNumber id="maxAttendees" class="form-control" @bind-Value="newEvent.MaxAttendees" />
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary px-4">Создать</button>
+            </div>
+        </div>
+    </EditForm>
+</div>
 
 @code {
     private EventCreateDto newEvent = new EventCreateDto
     {
         StartTime = DateTime.Now,
-        Latitude = 55.75,   // Москва дефолт
-        Longitude = 37.61
+        Latitude = 48.9226,
+        Longitude = 24.7111
     };
 
     private string? authToken;

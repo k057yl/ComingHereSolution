@@ -2,6 +2,7 @@
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject AuthService AuthService
+@inject IJSRuntime JS
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -11,14 +12,17 @@
         </button>
 
         <div class="d-flex align-items-center">
+            <button class="btn btn-outline-light btn-sm me-2" @onclick='() => SetLanguage("en")'>EN</button>
+            <button class="btn btn-outline-light btn-sm me-3" @onclick='() => SetLanguage("uk")'>UA</button>
+
             @if (isAuthenticated)
             {
                 <button class="btn btn-outline-light btn-sm" @onclick="Logout">Выйти</button>
             }
             else
             {
-                <button class="btn btn-outline-light btn-sm me-2" @onclick="@(() => Nav.NavigateTo("/login"))">Войти</button>
-                <button class="btn btn-outline-light btn-sm" @onclick="@(() => Nav.NavigateTo("/register"))">Регистрация</button>
+                <button class="btn btn-outline-light btn-sm me-2" @onclick='() => Nav.NavigateTo("/login")'>Войти</button>
+                <button class="btn btn-outline-light btn-sm" @onclick='() => Nav.NavigateTo("/register")'>Регистрация</button>
             }
         </div>
     </div>
@@ -99,5 +103,11 @@
     public void Dispose()
     {
         AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+
+    private async Task SetLanguage(string culture)
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "blazorCulture", culture);
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 }

@@ -2,6 +2,7 @@
 using ComingHereShared.DTO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace ComingHereClient.Services
@@ -17,12 +18,12 @@ namespace ComingHereClient.Services
         public string? UserEmail { get; private set; }
         public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
 
-        public AuthService(HttpClient http,
+        public AuthService(IHttpClientFactory httpClientFactory,
                            NavigationManager navigationManager,
                            CustomAuthStateProvider authStateProvider,
                            IJSRuntime js)
         {
-            _http = http;
+            _http = httpClientFactory.CreateClient("PublicClient");
             _navigationManager = navigationManager;
             _authStateProvider = authStateProvider;
             _js = js;

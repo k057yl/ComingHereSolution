@@ -15,21 +15,18 @@ namespace ComingHereServer.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        //private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly EmailService _emailService;
         private readonly ConfirmationCodeGenerator _codeGenerator;
         private readonly IMemoryCache _memoryCache;
         private readonly IConfiguration _configuration;
 
         public AccountController(UserManager<ApplicationUser> userManager,
-                                 //SignInManager<ApplicationUser> signInManager,
                                  EmailService emailService,
                                  ConfirmationCodeGenerator codeGenerator,
                                  IMemoryCache memoryCache,
                                  IConfiguration configuration)
         {
             _userManager = userManager;
-            //_signInManager = signInManager;
             _emailService = emailService;
             _codeGenerator = codeGenerator;
             _memoryCache = memoryCache;
@@ -62,9 +59,9 @@ namespace ComingHereServer.Controllers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),            // ⬅️ ВАЖНО
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Email)                      // для UI
+                new Claim(ClaimTypes.Name, user.Email)
             };
 
             var keyString = _configuration["Jwt:Key"];

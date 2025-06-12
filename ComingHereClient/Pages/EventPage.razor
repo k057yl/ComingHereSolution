@@ -4,64 +4,50 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
-<h3>Все события</h3>
+<h3 class="text-center mb-4">Все события</h3>
 
 @if (isLoading)
 {
-    <p>Загрузка...</p>
+    <p class="text-center">Загрузка...</p>
 }
 else if (events == null || !events.Any())
 {
-    <p>События не найдены.</p>
+    <p class="text-center">События не найдены.</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Название</th>
-                <th>Описание</th>
-                <th>Начало</th>
-                <th>Окончание</th>
-                <th>Место (с картой)</th>
-                <th>Цена</th>
-                <th>Макс. участников</th>
-                <th>Фото</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ev in events)
-            {
-                <tr>
-                    <td>@ev.Name</td>
-                    <td>@ev.Description</td>
-                    <td>@ev.StartTime.ToLocalTime().ToString("g")</td>
-                    <td>@(ev.EndTime != null ? ev.EndTime.Value.ToLocalTime().ToString("g") : "-")</td>
-                    <td>
-                        <div>@ev.Location (@ev.Latitude, @ev.Longitude)</div>
-                        <div id="map-@ev.Id" style="height: 200px; width: 200px;"></div>
-                    </td>
-                    <td>@(ev.Price != null ? $"{ev.Price} Грн" : "-")</td>
-                    <td>@(ev.MaxAttendees?.ToString() ?? "-")</td>
-                    <td>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var ev in events)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@ev.Name</h5>
+                        <p class="card-text">@ev.Description</p>
+
+                        <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
+                        <p class="card-text"><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
+
+                        <p class="card-text"><strong>Место:</strong> @ev.Location (@ev.Latitude, @ev.Longitude)</p>
+                        <div id="map-@ev.Id" style="height: 200px; width: 100%;" class="mb-3"></div>
+
+                        <p class="card-text"><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
+                        <p class="card-text"><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
+
                         @if (ev.Photos?.Count > 0)
                         {
-                            <img src="@ev.Photos[0].PhotoUrl" alt="Фото" width="100" />
+                            <img src="@ev.Photos[0].PhotoUrl" alt="Фото" class="img-fluid rounded mb-2" />
                         }
-                        else
-                        {
-                            <span>—</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => EditEvent(ev.Id)">✏️</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(ev.Id)">🗑️</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+                        <div class="mt-auto d-flex justify-content-between">
+                            <button class="btn btn-sm btn-secondary" @onclick="() => EditEvent(ev.Id)">✏️</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(ev.Id)">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @code {

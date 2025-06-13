@@ -1,4 +1,5 @@
 ﻿@page "/confirm"
+@using ComingHereShared.Constants
 @inject HttpClient Http
 @inject NavigationManager Nav
 
@@ -48,13 +49,13 @@ else
     private async Task ConfirmEmailCode()
     {
         var confirmDto = new { UserId = userId, Code = code };
-        var response = await Http.PostAsJsonAsync("api/account/confirm", confirmDto);
+        var response = await Http.PostAsJsonAsync(ApiRoutes.Account.Confirm, confirmDto);
 
         if (response.IsSuccessStatusCode)
         {
             message = "Email успешно подтверждён! Перенаправляем на страницу входа...";
             await Task.Delay(1500);
-            Nav.NavigateTo("/login");
+            Nav.NavigateTo(ApiRoutes.Account.Login);
         }
         else
         {

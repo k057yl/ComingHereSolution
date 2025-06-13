@@ -1,21 +1,33 @@
 ﻿@page "/"
 @using ComingHereClient.Services
+@using ComingHereShared.Constants
 @using ComingHereShared.DTO
-@using Microsoft.Extensions.Localization
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
 @inject LocalizationService Loc
 
-<h1>@Loc["Hello"]</h1>
+<div class="main-container">
+    <h1>@Loc["Hello"]</h1>
 
-@if (isLoading)
-{
-    <p class="text-center">Loading...</p>
-}
-else
-{
-    <div id="all-events-map" style="height: 500px; width: 100%;"></div>
-}
+    <p>
+        @Loc["WelcomeMessage_Part1"]
+        @Loc["WelcomeMessage_Part2"]
+        @Loc["WelcomeMessage_Part3"]
+        @Loc["WelcomeMessage_Part4"]
+        @Loc["WelcomeMessage_Part5"]
+    </p>
+
+    @if (isLoading)
+    {
+        <p class="text-center">Loading...</p>
+    }
+    else
+    {
+        <div class="map-container">
+            <div id="all-events-map" style="height: 500px; width: 100%;"></div>
+        </div>
+    }
+</div>
 
 @code {
     private List<EventDto>? activeEvents;
@@ -28,7 +40,7 @@ else
 
         try
         {
-            activeEvents = await client.GetFromJsonAsync<List<EventDto>>("api/event/active");
+            activeEvents = await client.GetFromJsonAsync<List<EventDto>>(ApiRoutes.Event.Active);
         }
         catch (Exception ex)
         {

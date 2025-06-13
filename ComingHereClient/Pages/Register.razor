@@ -1,6 +1,6 @@
 ﻿@page "/register"
 @using ComingHereShared.DTO
-@inject HttpClient Http
+@inject IHttpClientFactory ClientFactory
 @inject NavigationManager Nav
 
 <h3>Register</h3>
@@ -44,7 +44,10 @@
         }
 
         var registerDto = new RegisterDto { Email = email, Password = password };
-        var response = await Http.PostAsJsonAsync("api/account/register", registerDto);
+
+        var http = ClientFactory.CreateClient("PublicClient");
+
+        var response = await http.PostAsJsonAsync("api/account/register", registerDto);
 
         if (response.IsSuccessStatusCode)
         {

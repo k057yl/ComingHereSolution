@@ -1,9 +1,12 @@
 ﻿@page "/"
+@using System.Security.Claims
 @using ComingHereClient.Services
 @using ComingHereShared.Constants
 @using ComingHereShared.DTO
-@inject IHttpClientFactory HttpClientFactory
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime JS
+@inject IHttpClientFactory HttpClientFactory
 @inject LocalizationService Loc
 
 <div class="main-container">
@@ -16,26 +19,25 @@
         @Loc["WelcomeMessage_Part4"]
         @Loc["WelcomeMessage_Part5"]
     </p>
-
-    @if (isLoading)
-    {
-        <p class="text-center">Loading...</p>
-    }
-    else
-    {
-        <div class="map-container">
-            <div id="all-events-map" style="height: 500px; width: 100%;"></div>
-        </div>
-    }
+    <div class="map-container">
+        <div id="all-events-map" style="height: 500px; width: 100%;"></div>
+    </div>
 </div>
 
 @code {
-    private List<EventDto>? activeEvents;
+    private ClaimsPrincipal user = new ClaimsPrincipal(new ClaimsIdentity());
+    private string? token;
     private bool isLoading = true;
+    private List<EventDto>? activeEvents;
     private bool shouldRenderMap = false;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
 
         try
@@ -59,5 +61,15 @@
             shouldRenderMap = false;
             await JS.InvokeVoidAsync("renderEventMarkers", "all-events-map", activeEvents);
         }
+    }
+
+    private string GetClaimValue(string claimType)
+    {
+        return user.Claims.FirstOrDefault(c => c.Type == claimType)?.Value ?? "";
+    }
+
+    private IEnumerable<string> GetClaims(string claimType)
+    {
+        return user.Claims.Where(c => c.Type == claimType).Select(c => c.Value);
     }
 }

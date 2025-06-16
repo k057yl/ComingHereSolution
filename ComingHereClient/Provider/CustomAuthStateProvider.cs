@@ -56,10 +56,11 @@ namespace ComingHereClient.Provider
             return Convert.FromBase64String(base64);
         }
 
-        public async Task MarkUserAsAuthenticated(string token)
+        public async Task MarkUserAsAuthenticated(string token, List<string> roles)
         {
             await _js.InvokeVoidAsync("localStorage.setItem", "authToken", token);
-            NotifyAuthenticationStateChanged();
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
         public async Task MarkUserAsLoggedOut()

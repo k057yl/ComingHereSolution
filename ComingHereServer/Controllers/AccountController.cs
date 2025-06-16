@@ -57,17 +57,25 @@ namespace ComingHereServer.Controllers
             if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
                 return Unauthorized();
 
-            var claims = new[]
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+
+            Console.WriteLine("User roles: " + string.Join(", ", roles));
+
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var keyString = _configuration["Jwt:Key"];
             var keyBytes = Convert.FromBase64String(keyString);
             var key = new SymmetricSecurityKey(keyBytes);
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
@@ -79,7 +87,8 @@ namespace ComingHereServer.Controllers
             return Ok(new
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
-                email = user.Email
+                email = user.Email,
+                roles = roles
             });
         }
 

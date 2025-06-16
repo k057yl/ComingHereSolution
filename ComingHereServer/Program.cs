@@ -1,17 +1,19 @@
 using ComingHereServer;
 using ComingHereServer.Data;
+using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("GalaConnection")));
 
-builder.Services.AddIdentity<ComingHereShared.Entities.ApplicationUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedEmail = true;
 })
@@ -38,7 +40,9 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+
+        RoleClaimType = ClaimTypes.Role//************
     };
 });
 
@@ -94,5 +98,65 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.MapControllers();
+
+async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var config = serviceProvider.GetRequiredService<IConfiguration>();
+
+    string[] roles = new[] { "Gala", "User" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+
+    var adminEmail = config["AdminUser:Email"];
+    var adminPassword = config["AdminUser:Password"];
+
+    if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+    {
+        Console.WriteLine("Admin credentials are missing in configuration.");
+        return;
+    }
+
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        adminUser = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "Gala");
+            Console.WriteLine($"Admin user '{adminEmail}' created and added to 'Gala' role.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to create admin user:");
+            foreach (var error in result.Errors)
+                Console.WriteLine($"- {error.Description}");
+        }
+    }
+    else
+    {
+        var rolesOfUser = await userManager.GetRolesAsync(adminUser);
+        if (!rolesOfUser.Contains("Gala"))
+        {
+            await userManager.AddToRoleAsync(adminUser, "Gala");
+            Console.WriteLine($"Admin user '{adminEmail}' added to 'Gala' role.");
+        }
+    }
+}
+
+using var scope = app.Services.CreateScope();
+await SeedRolesAndAdminAsync(scope.ServiceProvider);
 
 app.Run();

@@ -2,8 +2,8 @@
 using ComingHereShared.DTO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using System.Net.Http;
 using System.Net.Http.Json;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace ComingHereClient.Services
 {
@@ -23,6 +23,7 @@ namespace ComingHereClient.Services
                            CustomAuthStateProvider authStateProvider,
                            IJSRuntime js)
         {
+            //_http = httpClientFactory.CreateClient("AuthorizedClient");
             _http = httpClientFactory.CreateClient("PublicClient");
             _navigationManager = navigationManager;
             _authStateProvider = authStateProvider;
@@ -45,10 +46,22 @@ namespace ComingHereClient.Services
 
                 await _js.InvokeVoidAsync("localStorage.setItem", "authToken", _token);
 
-                await _authStateProvider.MarkUserAsAuthenticated(_token);
+                var roles = ParseRolesFromJwt(_token);
+                await _authStateProvider.MarkUserAsAuthenticated(_token, roles);
+
                 return true;
             }
             return false;
+        }
+
+        private List<string> ParseRolesFromJwt(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            return jwt.Claims
+                      .Where(c => c.Type == "role")
+                      .Select(c => c.Value)
+                      .ToList();
         }
 
         public async Task Logout()

@@ -21,8 +21,8 @@ namespace ComingHereServer.Controllers
             _userManager = userManager;
         }
 
+        [Authorize(Roles = "Gala")]
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> Create(EventCreateDto dto)
         {
             var user = await _userManager.GetUserAsync(User);

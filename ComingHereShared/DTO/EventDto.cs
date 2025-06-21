@@ -17,5 +17,8 @@
         public int? MaxAttendees { get; set; }
 
         public List<EventPhotoDto> Photos { get; set; } = new();
+
+        public int? CategoryId { get; set; }
+        public string? CategoryName { get; set; }
     }
 }

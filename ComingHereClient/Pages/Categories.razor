@@ -1,0 +1,74 @@
+﻿@page "/categories"
+@using ComingHereShared.DTO
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Manage Event Categories</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div>
+        <input @bind="newCategoryName" placeholder="Category key (e.g. music)" class="form-control mb-2" />
+        <button class="btn btn-primary" @onclick="CreateCategory" disabled="@string.IsNullOrWhiteSpace(newCategoryName)">Add Category</button>
+    </div>
+
+    <ul class="list-group mt-3">
+        @foreach (var category in categories)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                @category.Name
+                <button class="btn btn-sm btn-danger" @onclick="() => DeleteCategory(category.Id)">Delete</button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<EventCategoryDto> categories = new();
+    private string newCategoryName = string.Empty;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+        isLoading = false;
+    }
+
+    private async Task LoadCategories()
+    {
+        categories = await Http.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory");
+    }
+
+    private async Task CreateCategory()
+    {
+        var dto = new CreateCategoryDto { Name = newCategoryName.Trim() };
+        var response = await Http.PostAsJsonAsync("api/eventcategory", dto);
+        if (response.IsSuccessStatusCode)
+        {
+            newCategoryName = "";
+            await LoadCategories();
+        }
+        else
+        {
+            // можно добавить вывод ошибки
+            Console.WriteLine("Failed to create category");
+        }
+    }
+
+    private async Task DeleteCategory(int id)
+    {
+        var response = await Http.DeleteAsync($"api/eventcategory/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadCategories();
+        }
+        else
+        {
+            Console.WriteLine("Failed to delete category");
+        }
+    }
+}

@@ -20,18 +20,33 @@
             </div>
 
             <div class="mb-3">
+                <label for="categorySelect" class="form-label">Категория</label>
+                <select id="categorySelect" class="form-select" @bind="newEvent.CategoryId">
+                    <option value="">-- Выберите категорию --</option>
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
                 <label for="description" class="form-label">Описание</label>
                 <InputTextArea id="description" class="form-control" @bind-Value="newEvent.Description" />
             </div>
 
             <div class="mb-3">
                 <label for="startTime" class="form-label">Дата и время начала</label>
-                <InputDate id="startTime" class="form-control" @bind-Value="newEvent.StartTime" />
+                <input type="datetime-local" id="startTime" class="form-control"
+                       value="@BindDateTime(newEvent.StartTime)"
+                       @oninput="e => newEvent.StartTime = ParseDateTime(e.Value?.ToString())" />
             </div>
 
             <div class="mb-3">
                 <label for="endTime" class="form-label">Дата и время окончания</label>
-                <InputDate id="endTime" class="form-control" @bind-Value="newEvent.EndTime" />
+                <input type="datetime-local" id="endTime" class="form-control"
+                       value="@BindDateTime(newEvent.EndTime ?? DateTime.Now)"
+                       @oninput="e => newEvent.EndTime = ParseDateTime(e.Value?.ToString())" />
             </div>
 
             <div class="mb-3">
@@ -81,6 +96,8 @@
     private string? authToken;
     private string? userName;
 
+    private List<EventCategoryDto> categories = new();
+
     protected override async Task OnInitializedAsync()
     {
         authToken = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
@@ -89,6 +106,16 @@
             userName = ExtractUserNameFromJwt(authToken) ?? "неизвестен";
         else
             userName = "аноним";
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("AuthorizedClient");
+            categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Не удалось загрузить категории: {ex.Message}");
+        }
     }
 
     private DotNetObjectReference<CreateEvent>? dotNetRef;
@@ -180,5 +207,14 @@
             case 3: base64 += "="; break;
         }
         return Convert.FromBase64String(base64);
+    }
+
+    private string BindDateTime(DateTime dt) => dt.ToString("yyyy-MM-ddTHH:mm");
+
+    private DateTime ParseDateTime(string? s)
+    {
+        if (DateTime.TryParse(s, out var dt))
+            return dt;
+        return DateTime.Now;
     }
 }

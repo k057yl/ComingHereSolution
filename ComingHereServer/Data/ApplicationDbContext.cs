@@ -15,6 +15,7 @@ namespace ComingHereServer.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<EventAttendee> EventAttendees { get; set; }
         public DbSet<EventPhoto> EventPhotos { get; set; }
+        public DbSet<EventCategory> EventCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -35,6 +36,12 @@ namespace ComingHereServer.Data
                 .WithMany(e => e.Photos)
                 .HasForeignKey(p => p.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Event>()
+                .HasOne(e => e.Category)
+                .WithMany(c => c.Events)
+                .HasForeignKey(e => e.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

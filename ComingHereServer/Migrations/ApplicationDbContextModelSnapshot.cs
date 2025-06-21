@@ -94,6 +94,9 @@ namespace ComingHereServer.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -130,6 +133,8 @@ namespace ComingHereServer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("OrganizerId");
 
                     b.ToTable("Events");
@@ -157,6 +162,23 @@ namespace ComingHereServer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("EventAttendees");
+                });
+
+            modelBuilder.Entity("ComingHereShared.Entities.EventCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EventCategories");
                 });
 
             modelBuilder.Entity("ComingHereShared.Entities.EventPhoto", b =>
@@ -315,11 +337,19 @@ namespace ComingHereServer.Migrations
 
             modelBuilder.Entity("ComingHereShared.Entities.Event", b =>
                 {
+                    b.HasOne("ComingHereShared.Entities.EventCategory", "Category")
+                        .WithMany("Events")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ComingHereShared.Entities.ApplicationUser", "Organizer")
                         .WithMany()
                         .HasForeignKey("OrganizerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Organizer");
                 });
@@ -410,6 +440,11 @@ namespace ComingHereServer.Migrations
                     b.Navigation("Attendees");
 
                     b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("ComingHereShared.Entities.EventCategory", b =>
+                {
+                    b.Navigation("Events");
                 });
 #pragma warning restore 612, 618
         }

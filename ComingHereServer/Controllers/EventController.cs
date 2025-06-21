@@ -29,6 +29,10 @@ namespace ComingHereServer.Controllers
             if (user == null)
                 return Unauthorized("Пользователь не найден. Проверь, есть ли claim 'sub' в JWT.");
 
+            var categoryExists = await _context.EventCategories.AnyAsync(c => c.Id == dto.CategoryId);
+            if (!categoryExists)
+                return BadRequest("Указанная категория не существует.");
+
             var newEvent = new Event
             {
                 Name = dto.Name,
@@ -40,6 +44,7 @@ namespace ComingHereServer.Controllers
                 Longitude = dto.Longitude,
                 Price = dto.Price,
                 MaxAttendees = dto.MaxAttendees,
+                CategoryId = dto.CategoryId,
                 OrganizerId = user.Id
             };
 

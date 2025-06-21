@@ -41,8 +41,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.Zero,
-
-        RoleClaimType = ClaimTypes.Role//************
+        RoleClaimType = ClaimTypes.Role
     };
 });
 
@@ -154,6 +153,19 @@ async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
             Console.WriteLine($"Admin user '{adminEmail}' added to 'Gala' role.");
         }
     }
+
+    var db = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+    string[] predefinedCategories = { "Art", "Music", "Science", "Workshop", "Theatre", "Gaming", "Education" };
+
+    foreach (var category in predefinedCategories)
+    {
+        if (!await db.Set<EventCategory>().AnyAsync(c => c.Name == category))
+        {
+            db.Set<EventCategory>().Add(new EventCategory { Name = category });
+        }
+    }
+    await db.SaveChangesAsync();
 }
 
 using var scope = app.Services.CreateScope();

@@ -1,11 +1,13 @@
 ﻿@page "/create-event"
+@using ComingHereClient.Services
 @using ComingHereShared.DTO
+@using System.Text.Json;
 @inject IJSRuntime JS
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Nav
-@using System.Text.Json;
+@inject LocalizationService Loc
 
-<h3 class="text-center mb-4">Создать событие</h3>
+<h3 class="text-center mb-4">@Loc["CreateEventPage_Title"]</h3>
 
 <div class="d-flex justify-content-center">
     <EditForm Model="newEvent" OnValidSubmit="HandleValidSubmit" style="width: 50%; min-height: 100vh;">
@@ -15,14 +17,14 @@
         <div class="p-3">
 
             <div class="mb-3">
-                <label for="name" class="form-label">Название</label>
+                <label for="name" class="form-label">@Loc["CreateEventPage_EventName"]</label>
                 <InputText id="name" class="form-control" @bind-Value="newEvent.Name" />
             </div>
 
             <div class="mb-3">
-                <label for="categorySelect" class="form-label">Категория</label>
+                <label for="categorySelect" class="form-label">@Loc["CreateEventPage_Category"]</label>
                 <select id="categorySelect" class="form-select" @bind="newEvent.CategoryId">
-                    <option value="">-- Выберите категорию --</option>
+                    <option value="">-- @Loc["CreateEventPage_SelectCategory"] --</option>
                     @foreach (var category in categories)
                     {
                         <option value="@category.Id">@category.Name</option>
@@ -31,7 +33,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="description" class="form-label">Описание</label>
+                <label for="description" class="form-label">@Loc["CreateEventPage_EventDescription"]</label>
                 <InputTextArea id="description" class="form-control" @bind-Value="newEvent.Description" />
             </div>
 

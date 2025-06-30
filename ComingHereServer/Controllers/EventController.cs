@@ -93,16 +93,20 @@ namespace ComingHereServer.Controllers
             return Ok(new { filePath = accessiblePath });
         }
 
-        [HttpGet]
+        [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetEvents()
+        public async Task<ActionResult<EventDto>> GetEvent(int id)
         {
-            var events = await _context.Events
-                .AsNoTracking()
+            var ev = await _context.Events
                 .Include(e => e.Photos)
-                .ToListAsync();
+                .Include(e => e.Category)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
 
-            var dtos = events.Select(ev => new EventDto
+            if (ev == null)
+                return NotFound();
+
+            return new EventDto
             {
                 Id = ev.Id,
                 Name = ev.Name,
@@ -114,14 +118,14 @@ namespace ComingHereServer.Controllers
                 Longitude = ev.Longitude,
                 Price = ev.Price,
                 MaxAttendees = ev.MaxAttendees,
+                CategoryId = ev.CategoryId,
+                CategoryName = ev.Category?.Name ?? "-",
                 Photos = ev.Photos.Select(p => new EventPhotoDto
                 {
                     Id = p.Id,
                     PhotoUrl = p.PhotoUrl
                 }).ToList()
-            }).ToList();
-
-            return Ok(dtos);
+            };
         }
 
         [HttpDelete("{id}")]
@@ -190,6 +194,40 @@ namespace ComingHereServer.Controllers
                 Description = ev.Description,
                 Latitude = ev.Latitude,
                 Longitude = ev.Longitude
+            }).ToList();
+
+            return Ok(dtos);
+        }
+
+        [HttpGet("all")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllEvents()
+        {
+            var events = await _context.Events
+                .AsNoTracking()
+                .Include(e => e.Photos)
+                .Include(e => e.Category)
+                .ToListAsync();
+
+            var dtos = events.Select(ev => new EventDto
+            {
+                Id = ev.Id,
+                Name = ev.Name,
+                Description = ev.Description,
+                StartTime = ev.StartTime,
+                EndTime = ev.EndTime,
+                Location = ev.Location,
+                Latitude = ev.Latitude,
+                Longitude = ev.Longitude,
+                Price = ev.Price,
+                MaxAttendees = ev.MaxAttendees,
+                CategoryId = ev.CategoryId,
+                CategoryName = ev.Category?.Name ?? "-",
+                Photos = ev.Photos.Select(p => new EventPhotoDto
+                {
+                    Id = p.Id,
+                    PhotoUrl = p.PhotoUrl
+                }).ToList()
             }).ToList();
 
             return Ok(dtos);

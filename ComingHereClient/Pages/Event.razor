@@ -1,0 +1,74 @@
+﻿@page "/event/{id:int}"
+@using ComingHereShared.DTO
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JS
+
+<h3 class="text-center mb-4">Просмотр события</h3>
+
+@if (isLoading)
+{
+    <p class="text-center">Загрузка...</p>
+}
+else if (ev == null)
+{
+    <p class="text-center">Событие не найдено.</p>
+}
+else
+{
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ev.Name</h4>
+                <p class="card-text"><strong>Категория:</strong> @ev.CategoryName</p>
+                <p class="card-text">@ev.Description</p>
+                <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
+                <p class="card-text"><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
+                <p class="card-text"><strong>Место:</strong> @ev.Location (@ev.Latitude, @ev.Longitude)</p>
+                <div id="map-@ev.Id" style="height: 400px; width: 100%;" class="mb-3"></div>
+                <p class="card-text"><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
+                <p class="card-text"><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
+
+                @if (ev.Photos?.Count > 0)
+                {
+                    <img src="@ev.Photos[0].PhotoUrl" alt="Фото" class="img-fluid rounded mb-2" />
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private EventDto? ev;
+    private bool isLoading = true;
+    private bool shouldRenderMap = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient("AuthorizedClient");
+        try
+        {
+            ev = await client.GetFromJsonAsync<EventDto>($"api/event/{id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при загрузке события: {ex.Message}");
+            ev = null;
+        }
+
+        isLoading = false;
+        shouldRenderMap = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (shouldRenderMap && ev != null)
+        {
+            await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
+            shouldRenderMap = false;
+        }
+    }
+}

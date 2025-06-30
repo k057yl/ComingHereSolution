@@ -1,4 +1,4 @@
-﻿@page "/events"
+﻿@page "/allevents"
 @using ComingHereShared.DTO
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
@@ -23,6 +23,7 @@ else
                 <div class="card h-100">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">@ev.Name</h5>
+                        <p class="card-text"><strong>Категория:</strong> @ev.CategoryName</p>
                         <p class="card-text">@ev.Description</p>
 
                         <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
@@ -40,6 +41,7 @@ else
                         }
 
                         <div class="mt-auto d-flex justify-content-between">
+                            <button class="btn btn-sm btn-primary" @onclick="() => ViewEvent(ev.Id)">👁️</button>
                             <button class="btn btn-sm btn-secondary" @onclick="() => EditEvent(ev.Id)">✏️</button>
                             <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(ev.Id)">🗑️</button>
                         </div>
@@ -60,7 +62,7 @@ else
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
         try
         {
-            events = await client.GetFromJsonAsync<List<EventDto>>("api/event");
+            events = await client.GetFromJsonAsync<List<EventDto>>("api/event/all");
         }
         catch (Exception ex)
         {
@@ -116,5 +118,10 @@ else
     private void EditEvent(int id)
     {
         Nav.NavigateTo($"/edit-event/{id}");
+    }
+
+    private void ViewEvent(int id)
+    {
+        Nav.NavigateTo($"/event/{id}");
     }
 }

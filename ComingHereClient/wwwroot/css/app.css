@@ -140,3 +140,38 @@ code {
     border: 1px solid #aaa;
     border-radius: 6px;
 }
+
+.map-legend {
+    top: 10px;
+    right: 10px;
+    background-color: #dbe1dd;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.map-legend div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    width: 300px;
+}
+
+.legend-marker {
+    width: 67px;
+    height: 51px;
+    vertical-align: middle;
+    margin-right: 20px;
+    margin-left: 20px;
+}
+
+.card-text.description-single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

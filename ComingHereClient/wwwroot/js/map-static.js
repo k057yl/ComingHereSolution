@@ -13,8 +13,18 @@ window.renderStaticMap = function (mapId, lat, lng) {
     }
 
     if (window._maps[mapId]) {
-        window._maps[mapId].remove();
+        try {
+            window._maps[mapId].remove();
+        } catch (e) {
+            console.warn("Ошибка при удалении карты:", e);
+        }
         window._maps[mapId] = null;
+    }
+
+    if (container._leaflet_id) {
+        try {
+            delete container._leaflet_id;
+        } catch { }
     }
 
     const map = L.map(mapId, {

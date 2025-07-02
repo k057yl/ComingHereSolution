@@ -19,9 +19,18 @@ namespace ComingHereServer.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCategories()
         {
-            var categories = await _context.EventCategories.ToListAsync();
+            var categories = await _context.EventCategories
+                .AsNoTracking()
+                .Select(c => new EventCategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name
+                })
+                .ToListAsync();
+
             return Ok(categories);
         }
 

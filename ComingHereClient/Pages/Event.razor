@@ -1,9 +1,12 @@
-﻿@page "/event/{id:int}"
+﻿@page "/events/{id:int}"
 @using ComingHereShared.DTO
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <h3 class="text-center mb-4">Просмотр события</h3>
+
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Назад к списку событий</button>
 
 @if (isLoading)
 {
@@ -50,7 +53,7 @@ else
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
         try
         {
-            ev = await client.GetFromJsonAsync<EventDto>($"api/event/{id}");
+            ev = await client.GetFromJsonAsync<EventDto>($"api/events/{id}");
         }
         catch (Exception ex)
         {
@@ -70,5 +73,10 @@ else
             await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
             shouldRenderMap = false;
         }
+    }
+
+    private void GoBack()
+    {
+        Nav.NavigateTo("/allevents");
     }
 }

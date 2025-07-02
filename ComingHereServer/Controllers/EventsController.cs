@@ -10,12 +10,12 @@ namespace ComingHereServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EventController : ControllerBase
+    public class EventsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public EventController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -54,8 +54,8 @@ namespace ComingHereServer.Controllers
             return Ok(new { newEvent.Id });
         }
 
-        [HttpPost("{eventId}/upload-photo")]
         [Authorize]
+        [HttpPost("{eventId}/upload-photo")]
         public async Task<IActionResult> UploadPhoto(int eventId, IFormFile photo)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -93,8 +93,8 @@ namespace ComingHereServer.Controllers
             return Ok(new { filePath = accessiblePath });
         }
 
-        [HttpGet("{id}")]
         [AllowAnonymous]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<EventDto>> GetEvent(int id)
         {
             var ev = await _context.Events
@@ -128,8 +128,8 @@ namespace ComingHereServer.Controllers
             };
         }
 
-        [HttpDelete("{id}")]
         [Authorize]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteEvent(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -148,8 +148,8 @@ namespace ComingHereServer.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id}")]
         [Authorize]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateEvent(int id, EventCreateDto dto)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -176,31 +176,8 @@ namespace ComingHereServer.Controllers
             return Ok();
         }
 
-        [HttpGet("active")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetActiveEvents()
-        {
-            var now = DateTime.UtcNow;
-
-            var events = await _context.Events
-                .Where(e => e.EndTime == null || e.EndTime > now)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var dtos = events.Select(ev => new EventDto
-            {
-                Id = ev.Id,
-                Name = ev.Name,
-                Description = ev.Description,
-                Latitude = ev.Latitude,
-                Longitude = ev.Longitude
-            }).ToList();
-
-            return Ok(dtos);
-        }
-
-        [HttpGet("all")]
-        [AllowAnonymous]
+        [HttpGet]
         public async Task<IActionResult> GetAllEvents()
         {
             var events = await _context.Events
@@ -228,6 +205,31 @@ namespace ComingHereServer.Controllers
                     Id = p.Id,
                     PhotoUrl = p.PhotoUrl
                 }).ToList()
+            }).ToList();
+
+            return Ok(dtos);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveEvents()
+        {
+            var now = DateTime.UtcNow;
+
+            var events = await _context.Events
+                .Where(e => e.EndTime == null || e.EndTime > now)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var dtos = events.Select(ev => new EventDto
+            {
+                Id = ev.Id,
+                Name = ev.Name,
+                Description = ev.Description,
+                Latitude = ev.Latitude,
+                Longitude = ev.Longitude,
+                StartTime = ev.StartTime,
+                EndTime = ev.EndTime
             }).ToList();
 
             return Ok(dtos);

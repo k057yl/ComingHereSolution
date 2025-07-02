@@ -70,7 +70,7 @@
             var client = HttpClientFactory.CreateClient("AuthorizedClient");
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-            var response = await client.PostAsync($"api/event/{EventId}/upload-photo", content);
+            var response = await client.PostAsync($"api/events/{EventId}/upload-photo", content);
 
             if (response.IsSuccessStatusCode)
             {

@@ -157,7 +157,7 @@
 
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
-        var response = await client.PostAsJsonAsync("api/event", newEvent);
+        var response = await client.PostAsJsonAsync("api/events", newEvent);
 
         if (response.IsSuccessStatusCode)
         {

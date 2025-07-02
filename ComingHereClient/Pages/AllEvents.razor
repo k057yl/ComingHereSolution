@@ -1,18 +1,35 @@
 ﻿@page "/allevents"
+@using ComingHereClient.Services
 @using ComingHereShared.DTO
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@inject LocalizationService Loc
 
-<h3 class="text-center mb-4">Все события</h3>
+<h3 class="text-center mb-4">@Loc["AllEventsPage_Title"]</h3>
+
+@if (categories != null && categories.Any())
+{
+    <div class="mb-3 text-center">
+        <label>@Loc["AllEventsPage_Filter"]</label>
+        <select @onchange="OnCategoryChanged">
+            <option value="">@Loc["AllEventsPage_AllCategory"]</option>
+            @foreach (var category in categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
+    </div>
+}
 
 @if (isLoading)
 {
-    <p class="text-center">Загрузка...</p>
+    <p class="text-center">@Loc["AllEventsPage_Loading"].</p>
 }
 else if (events == null || !events.Any())
 {
-    <p class="text-center">События не найдены.</p>
+    <p class="text-center">@Loc["AllEventsPage_NoEvents"].</p>
 }
 else
 {
@@ -22,28 +39,31 @@ else
             <div class="col">
                 <div class="card h-100">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">@ev.Name</h5>
+                        <h5 class="event-title">@ev.Name</h5>
+                        @if (ev.Photos?.Count > 0)
+                        {
+                            <img src="@ev.Photos[0].PhotoUrl" alt="Фото" class="img-container-allevent" />
+                        }
+
                         <p class="card-text"><strong>Категория:</strong> @ev.CategoryName</p>
-                        <p class="card-text">@ev.Description</p>
+                        <p class="card-text description-single-line">@ev.Description</p>
 
                         <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
                         <p class="card-text"><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
 
                         <p class="card-text"><strong>Место:</strong> @ev.Location (@ev.Latitude, @ev.Longitude)</p>
-                        <div id="map-@ev.Id" style="height: 200px; width: 100%;" class="mb-3"></div>
+                        <div id="map-@ev.Id" class="map-container-allevent"></div>
 
                         <p class="card-text"><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
                         <p class="card-text"><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
 
-                        @if (ev.Photos?.Count > 0)
-                        {
-                            <img src="@ev.Photos[0].PhotoUrl" alt="Фото" class="img-fluid rounded mb-2" />
-                        }
-
                         <div class="mt-auto d-flex justify-content-between">
                             <button class="btn btn-sm btn-primary" @onclick="() => ViewEvent(ev.Id)">👁️</button>
-                            <button class="btn btn-sm btn-secondary" @onclick="() => EditEvent(ev.Id)">✏️</button>
-                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(ev.Id)">🗑️</button>
+                            @if (isAdmin)
+                            {
+                                <button class="btn btn-sm btn-secondary" @onclick="() => EditEvent(ev.Id)">✏️</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(ev.Id)">🗑️</button>
+                            }
                         </div>
                     </div>
                 </div>
@@ -56,23 +76,53 @@ else
     private List<EventDto>? events;
     private bool isLoading = true;
     private bool shouldRenderMaps = false;
+    private bool isAdmin = false;
+    private List<EventDto>? allEvents;
+    private List<EventCategoryDto>? categories;
+    private int? selectedCategoryId = null;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAdmin = user.IsInRole("Gala");
+
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
         try
         {
-            events = await client.GetFromJsonAsync<List<EventDto>>("api/event/all");
+            allEvents = await client.GetFromJsonAsync<List<EventDto>>("api/events");
+            events = allEvents;
+
+            categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка при загрузке событий: {ex.Message}");
+            Console.WriteLine($"Ошибка при загрузке: {ex.Message}");
+            allEvents = null;
             events = null;
+            categories = null;
         }
 
         isLoading = false;
         shouldRenderMaps = true;
         StateHasChanged();
+    }
+
+    private void OnCategoryChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (int.TryParse(val, out int id))
+        {
+            selectedCategoryId = id;
+            events = allEvents?.Where(ev => ev.CategoryId == id).ToList();
+        }
+        else
+        {
+            selectedCategoryId = null;
+            events = allEvents;
+        }
+
+        shouldRenderMaps = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -96,7 +146,7 @@ else
         try
         {
             var client = HttpClientFactory.CreateClient("AuthorizedClient");
-            var response = await client.DeleteAsync($"api/event/{id}");
+            var response = await client.DeleteAsync($"api/events/{id}"); ;
 
             if (response.IsSuccessStatusCode)
             {
@@ -117,11 +167,11 @@ else
 
     private void EditEvent(int id)
     {
-        Nav.NavigateTo($"/edit-event/{id}");
+        Nav.NavigateTo($"/edit-events/{id}");
     }
 
     private void ViewEvent(int id)
     {
-        Nav.NavigateTo($"/event/{id}");
+        Nav.NavigateTo($"/events/{id}");
     }
 }

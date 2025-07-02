@@ -1,13 +1,21 @@
 {
-  "Hello": "Hello!",
-  "WelcomeMessage_Part1": "Welcome to the liveliest platform of Ivano-Frankivsk - the place where everything that makes our city alive and unique comes together!",
-  "WelcomeMessage_Part2": "Want to know where the next exhibition is, where awesome concerts will take place, or where the hottest parties will gather? You’re in the right spot!",
-  "WelcomeMessage_Part3": "We don’t just collect event posters - we catch the city’s spirit, feel every rhythm and moment that can change your day or even your life.",
-  "WelcomeMessage_Part4": "Here you’ll find not only classic exhibitions and concerts but also those offbeat events that official guides won’t tell you about.",
-  "WelcomeMessage_Part5": "Ivano-Frankivsk is a city with soul, where culture and good times go hand in hand. Grab the freshest announcements, plan your weekend. Come in, choose, live brightly - because life’s too short to sit at home.",
+  "HomePage_Hello": "Hello!",
+  "HomePage_WelcomeMessage_Part1": "Welcome to the liveliest platform of Ivano-Frankivsk - the place where everything that makes our city alive and unique comes together!",
+  "HomePage_WelcomeMessage_Part2": "Want to know where the next exhibition is, where awesome concerts will take place, or where the hottest parties will gather? You’re in the right spot!",
+  "HomePage_WelcomeMessage_Part3": "We don’t just collect event posters - we catch the city’s spirit, feel every rhythm and moment that can change your day or even your life.",
+  "HomePage_WelcomeMessage_Part4": "Here you’ll find not only classic exhibitions and concerts but also those offbeat events that official guides won’t tell you about.",
+  "HomePage_WelcomeMessage_Part5": "Ivano-Frankivsk is a city with soul, where culture and good times go hand in hand. Grab the freshest announcements, plan your weekend. Come in, choose, live brightly - because life’s too short to sit at home.",
+  "HomePage_Map_Today": "Today",
+  "HomePage_Map_ThisWeek": "This Week",
+  "HomePage_Map_Later": "Later",
   "CreateEventPage_Title": "Create Event",
   "CreateEventPage_EventName": "Event Name",
   "CreateEventPage_Category": "Category",
   "CreateEventPage_SelectCategory": "Select Category",
-  "CreateEventPage_EventDescription": "Event Description"
+  "CreateEventPage_EventDescription": "Event Description",
+  "AllEventsPage_Title": "All Events",
+  "AllEventsPage_Filter": "Filter by category:",
+  "AllEventsPage_AllCategory": "--All categories--",
+  "AllEventsPage_Loading": "Loading...",
+  "AllEventsPage_NoEvents": "No events found."
 }

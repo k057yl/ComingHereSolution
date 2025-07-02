@@ -4,9 +4,9 @@
     {
         public static class Event
         {
-            public const string Active = "api/event/active";
-            public const string Create = "api/event/create";
-            public const string Delete = "api/event/delete";
+            public const string Active = "api/events/active";
+            public const string Create = "api/events/create";
+            public const string Delete = "api/events/delete";
         }
 
         public static class Account

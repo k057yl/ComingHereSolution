@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ComingHereServer.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class LocalizedFieldsSupport : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -176,16 +176,17 @@ namespace ComingHereServer.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "jsonb", nullable: false),
+                    Description = table.Column<string>(type: "jsonb", nullable: false),
+                    Location = table.Column<string>(type: "jsonb", nullable: false),
                     StartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Location = table.Column<string>(type: "text", nullable: false),
                     Latitude = table.Column<double>(type: "double precision", nullable: false),
                     Longitude = table.Column<double>(type: "double precision", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: true),
                     MaxAttendees = table.Column<int>(type: "integer", nullable: true),
                     OrganizerId = table.Column<string>(type: "text", nullable: false),
+                    OrganizerDisplayName = table.Column<string>(type: "jsonb", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>

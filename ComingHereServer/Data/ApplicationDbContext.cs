@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Text.Json;
 
 namespace ComingHereServer.Data
 {
@@ -21,6 +23,7 @@ namespace ComingHereServer.Data
         {
             base.OnModelCreating(builder);
 
+            // Связи
             builder.Entity<EventAttendee>()
                 .HasOne(e => e.Event)
                 .WithMany(e => e.Attendees)
@@ -42,6 +45,21 @@ namespace ComingHereServer.Data
                 .WithMany(c => c.Events)
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            var options = new JsonSerializerOptions();
+
+            var localizedStringConverter = new ValueConverter<LocalizedString, string>(
+                v => JsonSerializer.Serialize(v.Values, options),
+                v => new LocalizedString
+                {
+                    Values = JsonSerializer.Deserialize<Dictionary<string, string>>(v, options) ?? new Dictionary<string, string>()
+                }
+            );
+
+            builder.Entity<Event>().Property(e => e.Name).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+            builder.Entity<Event>().Property(e => e.Description).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+            builder.Entity<Event>().Property(e => e.Location).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+            builder.Entity<Event>().Property(e => e.OrganizerDisplayName).HasConversion(localizedStringConverter).HasColumnType("jsonb");
         }
     }
 }

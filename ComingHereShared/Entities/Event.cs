@@ -3,9 +3,13 @@
     public class Event
     {
         public int Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string Description { get; set; } = null!;
 
+        // Локализуемые поля
+        public LocalizedString Name { get; set; } = new();
+        public LocalizedString Description { get; set; } = new();
+        public LocalizedString Location { get; set; } = new();
+
+        // Дата и время
         private DateTime _startTime;
         public DateTime StartTime
         {
@@ -22,19 +26,28 @@
                 : (DateTime?)null;
         }
 
-        public string Location { get; set; } = null!;
+        // Координаты
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+
+        // Цена и участники
         public decimal? Price { get; set; }
         public int? MaxAttendees { get; set; }
 
+        // Фото
         public ICollection<EventPhoto> Photos { get; set; } = new List<EventPhoto>();
 
+        // Организатор
         public string OrganizerId { get; set; } = null!;
         public ApplicationUser Organizer { get; set; } = null!;
 
+        // 💬 Название компании / бренда организатора
+        public LocalizedString OrganizerDisplayName { get; set; } = new();
+
+        // Участники
         public ICollection<EventAttendee> Attendees { get; set; } = new List<EventAttendee>();
 
+        // Категория
         public int CategoryId { get; set; }
         public EventCategory Category { get; set; } = null!;
     }

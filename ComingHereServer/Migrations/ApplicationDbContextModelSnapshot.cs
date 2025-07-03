@@ -99,7 +99,7 @@ namespace ComingHereServer.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone");
@@ -109,7 +109,7 @@ namespace ComingHereServer.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<double>("Longitude")
                         .HasColumnType("double precision");
@@ -119,7 +119,11 @@ namespace ComingHereServer.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("OrganizerDisplayName")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("OrganizerId")
                         .IsRequired()

@@ -13,7 +13,7 @@
 {
     <div class="mb-3 text-center">
         <label>@Loc["AllEventsPage_Filter"]</label>
-        <select @onchange="OnCategoryChanged">
+        <select @onchange="OnCategoryChanged" class="form-select w-auto d-inline-block ms-2">
             <option value="">@Loc["AllEventsPage_AllCategory"]</option>
             @foreach (var category in categories)
             {
@@ -83,14 +83,24 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Loc.LanguageChanged += OnLanguageChanged;
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        isAdmin = user.IsInRole("Gala");
+        isAdmin = authState.User.IsInRole("Gala");
+
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
 
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
+
         try
         {
-            allEvents = await client.GetFromJsonAsync<List<EventDto>>("api/events");
+            allEvents = await client.GetFromJsonAsync<List<EventDto>>($"api/events?culture={Loc.CurrentCulture}");
             events = allEvents;
 
             categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory");
@@ -133,7 +143,6 @@ else
             {
                 await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
             }
-
             shouldRenderMaps = false;
         }
     }
@@ -146,7 +155,7 @@ else
         try
         {
             var client = HttpClientFactory.CreateClient("AuthorizedClient");
-            var response = await client.DeleteAsync($"api/events/{id}"); ;
+            var response = await client.DeleteAsync($"api/events/{id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -173,5 +182,16 @@ else
     private void ViewEvent(int id)
     {
         Nav.NavigateTo($"/events/{id}");
+    }
+
+    private async Task OnLanguageChanged()
+    {
+        await LoadDataAsync();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Loc.LanguageChanged -= OnLanguageChanged;
     }
 }

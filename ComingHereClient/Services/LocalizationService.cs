@@ -8,6 +8,10 @@ namespace ComingHereClient.Services
 
         private Dictionary<string, string> _strings = new();
 
+        public string CurrentCulture { get; private set; } = "uk";
+
+        public event Func<Task>? LanguageChanged;
+
         public LocalizationService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
@@ -20,6 +24,17 @@ namespace ComingHereClient.Services
             var client = _httpClientFactory.CreateClient("StaticFilesClient");
             var json = await client.GetStringAsync($"i18n/{culture}.json");
             _strings = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new();
+            CurrentCulture = culture;
+        }
+
+        public async Task ChangeLanguageAsync(string culture)
+        {
+            if (culture == CurrentCulture) return;
+
+            await LoadAsync(culture);
+
+            if (LanguageChanged != null)
+                await LanguageChanged.Invoke();
         }
     }
 }

@@ -37,9 +37,9 @@ namespace ComingHereServer.Controllers
             {
                 Name = dto.Name,
                 Description = dto.Description,
+                Location = dto.Location,
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime,
-                Location = dto.Location,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
                 Price = dto.Price,
@@ -95,7 +95,7 @@ namespace ComingHereServer.Controllers
 
         [AllowAnonymous]
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<EventDto>> GetEvent(int id)
+        public async Task<ActionResult<EventDto>> GetEvent(int id, [FromQuery] string culture = "uk")
         {
             var ev = await _context.Events
                 .Include(e => e.Photos)
@@ -106,26 +106,7 @@ namespace ComingHereServer.Controllers
             if (ev == null)
                 return NotFound();
 
-            return new EventDto
-            {
-                Id = ev.Id,
-                Name = ev.Name,
-                Description = ev.Description,
-                StartTime = ev.StartTime,
-                EndTime = ev.EndTime,
-                Location = ev.Location,
-                Latitude = ev.Latitude,
-                Longitude = ev.Longitude,
-                Price = ev.Price,
-                MaxAttendees = ev.MaxAttendees,
-                CategoryId = ev.CategoryId,
-                CategoryName = ev.Category?.Name ?? "-",
-                Photos = ev.Photos.Select(p => new EventPhotoDto
-                {
-                    Id = p.Id,
-                    PhotoUrl = p.PhotoUrl
-                }).ToList()
-            };
+            return EventDto.FromEntity(ev, culture);
         }
 
         [Authorize]
@@ -163,9 +144,10 @@ namespace ComingHereServer.Controllers
 
             ev.Name = dto.Name;
             ev.Description = dto.Description;
+            ev.Location = dto.Location;
+
             ev.StartTime = dto.StartTime;
             ev.EndTime = dto.EndTime;
-            ev.Location = dto.Location;
             ev.Latitude = dto.Latitude;
             ev.Longitude = dto.Longitude;
             ev.Price = dto.Price;
@@ -178,7 +160,7 @@ namespace ComingHereServer.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetAllEvents()
+        public async Task<IActionResult> GetAllEvents([FromQuery] string culture = "uk")
         {
             var events = await _context.Events
                 .AsNoTracking()
@@ -186,51 +168,25 @@ namespace ComingHereServer.Controllers
                 .Include(e => e.Category)
                 .ToListAsync();
 
-            var dtos = events.Select(ev => new EventDto
-            {
-                Id = ev.Id,
-                Name = ev.Name,
-                Description = ev.Description,
-                StartTime = ev.StartTime,
-                EndTime = ev.EndTime,
-                Location = ev.Location,
-                Latitude = ev.Latitude,
-                Longitude = ev.Longitude,
-                Price = ev.Price,
-                MaxAttendees = ev.MaxAttendees,
-                CategoryId = ev.CategoryId,
-                CategoryName = ev.Category?.Name ?? "-",
-                Photos = ev.Photos.Select(p => new EventPhotoDto
-                {
-                    Id = p.Id,
-                    PhotoUrl = p.PhotoUrl
-                }).ToList()
-            }).ToList();
+            var dtos = events.Select(ev => EventDto.FromEntity(ev, culture)).ToList();
 
             return Ok(dtos);
         }
 
         [AllowAnonymous]
         [HttpGet("active")]
-        public async Task<IActionResult> GetActiveEvents()
+        public async Task<IActionResult> GetActiveEvents([FromQuery] string culture = "uk")
         {
             var now = DateTime.UtcNow;
 
             var events = await _context.Events
                 .Where(e => e.EndTime == null || e.EndTime > now)
                 .AsNoTracking()
+                .Include(e => e.Photos)
+                .Include(e => e.Category)
                 .ToListAsync();
 
-            var dtos = events.Select(ev => new EventDto
-            {
-                Id = ev.Id,
-                Name = ev.Name,
-                Description = ev.Description,
-                Latitude = ev.Latitude,
-                Longitude = ev.Longitude,
-                StartTime = ev.StartTime,
-                EndTime = ev.EndTime
-            }).ToList();
+            var dtos = events.Select(ev => EventDto.FromEntity(ev, culture)).ToList();
 
             return Ok(dtos);
         }

@@ -16,9 +16,16 @@
 
         <div class="p-3">
 
+            <!-- Название (Украинский) -->
             <div class="mb-3">
-                <label for="name" class="form-label">@Loc["CreateEventPage_EventName"]</label>
-                <InputText id="name" class="form-control" @bind-Value="newEvent.Name" />
+                <label for="nameUk" class="form-label">@Loc["CreateEventPage_EventName"] (UK)</label>
+                <InputText id="nameUk" class="form-control" @bind-Value="NameUk" />
+            </div>
+
+            <!-- Название (English) -->
+            <div class="mb-3">
+                <label for="nameEn" class="form-label">@Loc["CreateEventPage_EventName"] (EN)</label>
+                <InputText id="nameEn" class="form-control" @bind-Value="NameEn" />
             </div>
 
             <div class="mb-3">
@@ -32,9 +39,16 @@
                 </select>
             </div>
 
+            <!-- Описание (Украинский) -->
             <div class="mb-3">
-                <label for="description" class="form-label">@Loc["CreateEventPage_EventDescription"]</label>
-                <InputTextArea id="description" class="form-control" @bind-Value="newEvent.Description" />
+                <label for="descriptionUk" class="form-label">@Loc["CreateEventPage_EventDescription"] (UK)</label>
+                <InputTextArea id="descriptionUk" class="form-control" @bind-Value="DescriptionUk" />
+            </div>
+
+            <!-- Описание (English) -->
+            <div class="mb-3">
+                <label for="descriptionEn" class="form-label">@Loc["CreateEventPage_EventDescription"] (EN)</label>
+                <InputTextArea id="descriptionEn" class="form-control" @bind-Value="DescriptionEn" />
             </div>
 
             <div class="mb-3">
@@ -51,9 +65,16 @@
                        @oninput="e => newEvent.EndTime = ParseDateTime(e.Value?.ToString())" />
             </div>
 
+            <!-- Место (Украинский) -->
             <div class="mb-3">
-                <label for="location" class="form-label">Место</label>
-                <InputText id="location" class="form-control" @bind-Value="newEvent.Location" />
+                <label for="locationUk" class="form-label">Место (UK)</label>
+                <InputText id="locationUk" class="form-control" @bind-Value="LocationUk" />
+            </div>
+
+            <!-- Место (English) -->
+            <div class="mb-3">
+                <label for="locationEn" class="form-label">Место (EN)</label>
+                <InputText id="locationEn" class="form-control" @bind-Value="LocationEn" />
             </div>
 
             <div class="mb-4 d-flex justify-content-center">
@@ -218,5 +239,41 @@
         if (DateTime.TryParse(s, out var dt))
             return dt;
         return DateTime.Now;
+    }
+
+    private string NameUk
+    {
+        get => newEvent.Name.Get("uk");
+        set => newEvent.Name.Set("uk", value);
+    }
+
+    private string NameEn
+    {
+        get => newEvent.Name.Get("en");
+        set => newEvent.Name.Set("en", value);
+    }
+
+    private string DescriptionUk
+    {
+        get => newEvent.Description.Get("uk");
+        set => newEvent.Description.Set("uk", value);
+    }
+
+    private string DescriptionEn
+    {
+        get => newEvent.Description.Get("en");
+        set => newEvent.Description.Set("en", value);
+    }
+
+    private string LocationUk
+    {
+        get => newEvent.Location.Get("uk");
+        set => newEvent.Location.Set("uk", value);
+    }
+
+    private string LocationEn
+    {
+        get => newEvent.Location.Get("en");
+        set => newEvent.Location.Set("en", value);
     }
 }

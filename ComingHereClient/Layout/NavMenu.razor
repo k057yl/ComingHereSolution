@@ -29,8 +29,8 @@
             }
             else
             {
-                <button class="btn btn-outline-light btn-sm me-2" @onclick='() => Nav.NavigateTo(ApiRoutes.Account.Login)'>Войти</button>
-                <button class="btn btn-outline-light btn-sm" @onclick='() => Nav.NavigateTo(ApiRoutes.Account.Register)'>Регистрация</button>
+                <button class="btn btn-outline-light btn-sm me-2" @onclick='() => Nav.NavigateTo(ClientRoutes.Login)'>Войти</button>
+                <button class="btn btn-outline-light btn-sm" @onclick='() => Nav.NavigateTo(ClientRoutes.Register)'>Регистрация</button>
             }
         </div>
     </div>
@@ -83,7 +83,7 @@
         isAuthenticated = user.Identity?.IsAuthenticated ?? false;
         userEmail = user.Identity?.Name;
 
-        isGala = user.IsInRole("Gala");
+        isGala = user.IsInRole(Roles.Gala);
     }
 
     private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
@@ -93,7 +93,7 @@
         isAuthenticated = user.Identity?.IsAuthenticated ?? false;
         userEmail = user.Identity?.Name;
 
-        isGala = user.IsInRole("Gala");
+        isGala = user.IsInRole(Roles.Gala);
 
         await InvokeAsync(StateHasChanged);
     }

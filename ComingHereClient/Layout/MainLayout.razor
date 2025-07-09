@@ -3,14 +3,12 @@
 @inject HttpClient Http
 
 <div class="page">
-    <div class="sidebar">
+    <div class="sidebar-left">
         <NavMenu />
     </div>
 
     <main>
         <div class="top-row px-4 auth">
-            @*<LoginDisplay />*@
-
             @if (isAuthenticated)
             {
                 <span class="ms-3">Привет, @userEmail!</span>
@@ -21,6 +19,10 @@
             @Body
         </article>
     </main>
+
+    <div class="sidebar-right">
+        <RightPanel />
+    </div>
 </div>
 
 @code {

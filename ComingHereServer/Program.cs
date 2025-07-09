@@ -1,5 +1,6 @@
 using ComingHereServer;
 using ComingHereServer.Data;
+using ComingHereShared.Constants;
 using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -57,9 +58,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://localhost:7184",
-                           "http://localhost:5000",
-                           "http://localhost:5173")
+        policy.WithOrigins(ApiUrls.AllowedCorsOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -104,7 +103,7 @@ async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
     var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var config = serviceProvider.GetRequiredService<IConfiguration>();
 
-    string[] roles = new[] { "Gala", "User" };
+    string[] roles = new[] { Roles.Gala, Roles.User };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
@@ -134,7 +133,7 @@ async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
         var result = await userManager.CreateAsync(adminUser, adminPassword);
         if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(adminUser, "Gala");
+            await userManager.AddToRoleAsync(adminUser, Roles.Gala);
             Console.WriteLine($"Admin user '{adminEmail}' created and added to 'Gala' role.");
         }
         else
@@ -147,9 +146,9 @@ async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
     else
     {
         var rolesOfUser = await userManager.GetRolesAsync(adminUser);
-        if (!rolesOfUser.Contains("Gala"))
+        if (!rolesOfUser.Contains(Roles.Gala))
         {
-            await userManager.AddToRoleAsync(adminUser, "Gala");
+            await userManager.AddToRoleAsync(adminUser, Roles.Gala);
             Console.WriteLine($"Admin user '{adminEmail}' added to 'Gala' role.");
         }
     }

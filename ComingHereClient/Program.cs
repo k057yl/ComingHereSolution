@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using ComingHereClient;
 using ComingHereClient.Provider;
 using ComingHereClient.Services;
+using ComingHereShared.Constants;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -18,13 +19,13 @@ builder.Services.AddHttpClient("StaticFilesClient", client =>
 // Клиент без авторизации
 builder.Services.AddHttpClient("PublicClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7255/");
+    client.BaseAddress = new Uri(ApiUrls.ApiBaseUrl);
 });
 
 // Клиент с авторизацией
 builder.Services.AddHttpClient("AuthorizedClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7255/");
+    client.BaseAddress = new Uri(ApiUrls.ApiBaseUrl);
 })
 .AddHttpMessageHandler<AuthorizationMessageHandler>();
 

@@ -20,4 +20,8 @@
     <ProjectReference Include="..\ComingHereShared\ComingHereShared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\sample-data\" />
+  </ItemGroup>
+
 </Project>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Net.Http.Json;
 using System.IdentityModel.Tokens.Jwt;
+using ComingHereShared.Constants;
 
 namespace ComingHereClient.Services
 {
@@ -23,7 +24,7 @@ namespace ComingHereClient.Services
                            CustomAuthStateProvider authStateProvider,
                            IJSRuntime js)
         {
-            //_http = httpClientFactory.CreateClient("AuthorizedClient");
+            _http = httpClientFactory.CreateClient("AuthorizedClient");
             _http = httpClientFactory.CreateClient("PublicClient");
             _navigationManager = navigationManager;
             _authStateProvider = authStateProvider;
@@ -32,7 +33,7 @@ namespace ComingHereClient.Services
 
         public async Task<bool> Login(string email, string password)
         {
-            var response = await _http.PostAsJsonAsync("api/account/login", new { Email = email, Password = password });
+            var response = await _http.PostAsJsonAsync(ApiRoutes.Account.Login, new { Email = email, Password = password });
 
             if (!response.IsSuccessStatusCode)
                 return false;

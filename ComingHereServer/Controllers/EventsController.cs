@@ -27,11 +27,17 @@ namespace ComingHereServer.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-                return Unauthorized("Пользователь не найден. Проверь, есть ли claim 'sub' в JWT.");
+                return Unauthorized("Пользователь не найден.");
 
-            var categoryExists = await _context.EventCategories.AnyAsync(c => c.Id == dto.CategoryId);
-            if (!categoryExists)
-                return BadRequest("Указанная категория не существует.");
+            var organizer = await _context.EventOrganizers
+                .FirstOrDefaultAsync(o => o.ApplicationUserId == user.Id);
+
+            /*if (organizer == null)
+                return Problem("У тебя нет профиля организатора.", statusCode: 403);*/
+
+            var organizerExists = await _context.EventOrganizers.AnyAsync(o => o.Id == dto.OrganizerId);
+            if (!organizerExists)
+                return BadRequest("Указанный организатор не существует.");
 
             var newEvent = new Event
             {
@@ -45,11 +51,25 @@ namespace ComingHereServer.Controllers
                 Price = dto.Price,
                 MaxAttendees = dto.MaxAttendees,
                 CategoryId = dto.CategoryId,
-                OrganizerId = user.Id
+                OrganizerId = dto.OrganizerId
             };
 
             _context.Events.Add(newEvent);
             await _context.SaveChangesAsync();
+
+            if (dto.ParticipantIds != null && dto.ParticipantIds.Any())
+            {
+                var existingParticipants = await _context.EventParticipants
+                    .Where(p => dto.ParticipantIds.Contains(p.Id))
+                    .ToListAsync();
+
+                foreach (var participant in existingParticipants)
+                {
+                    participant.EventId = newEvent.Id;
+                }
+
+                await _context.SaveChangesAsync();
+            }
 
             return Ok(new { newEvent.Id });
         }
@@ -116,10 +136,14 @@ namespace ComingHereServer.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            var ev = await _context.Events.Include(e => e.Photos).FirstOrDefaultAsync(e => e.Id == id);
+            var ev = await _context.Events
+                .Include(e => e.Photos)
+                .Include(e => e.Organizer)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
             if (ev == null) return NotFound();
 
-            if (ev.OrganizerId != user.Id)
+            if (ev.Organizer.ApplicationUserId != user.Id)
                 return Forbid("Ты не можешь удалять чужие события");
 
             _context.EventPhotos.RemoveRange(ev.Photos);
@@ -139,7 +163,7 @@ namespace ComingHereServer.Controllers
             var ev = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
             if (ev == null) return NotFound();
 
-            if (ev.OrganizerId != user.Id)
+            if (ev.Organizer.ApplicationUserId != user.Id)
                 return Forbid("Редактировать можно только свои события");
 
             ev.Name = dto.Name;

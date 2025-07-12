@@ -1,0 +1,122 @@
+﻿@page "/create-participant/{EventId:int}"
+@using ComingHereShared.DTO
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Создать участника для события @EventId</h3>
+
+<EditForm Model="participant" OnValidSubmit="OnCreateParticipant">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Имя (uk)</label>
+        <InputText class="form-control" @bind-Value="NameUk" />
+    </div>
+
+    <div class="mb-3">
+        <label>Имя (en)</label>
+        <InputText class="form-control" @bind-Value="NameEn" />
+    </div>
+
+    <div class="mb-3">
+        <label>Роль (uk)</label>
+        <InputText class="form-control" @bind-Value="RoleUk" />
+    </div>
+
+    <div class="mb-3">
+        <label>Роль (en)</label>
+        <InputText class="form-control" @bind-Value="RoleEn" />
+    </div>
+
+    <div class="mb-3">
+        <label>Биография</label>
+        <InputTextArea class="form-control" @bind-Value="participant.Bio" />
+    </div>
+
+    <div class="mb-3">
+        <label>Instagram</label>
+        <InputText class="form-control" @bind-Value="participant.Instagram" />
+    </div>
+
+    <div class="mb-3">
+        <label>Website</label>
+        <InputText class="form-control" @bind-Value="participant.Website" />
+    </div>
+
+    <div class="mb-3">
+        <label>Contact</label>
+        <InputText class="form-control" @bind-Value="participant.Contact" />
+    </div>
+
+    <div class="mb-3">
+        <label>Order</label>
+        <InputNumber class="form-control" @bind-Value="participant.Order" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Создать</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(result))
+{
+    <div class="alert alert-info mt-3">@result</div>
+}
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private EventParticipantCreateDto participant = new()
+    {
+        Name = new() { Values = new Dictionary<string, string>() },
+        Role = new() { Values = new Dictionary<string, string>() }
+    };
+
+    private string? result;
+
+    private string NameUk
+    {
+        get => participant.Name.Values.ContainsKey("uk") ? participant.Name.Values["uk"] : "";
+        set => participant.Name.Values["uk"] = value;
+    }
+
+    private string NameEn
+    {
+        get => participant.Name.Values.ContainsKey("en") ? participant.Name.Values["en"] : "";
+        set => participant.Name.Values["en"] = value;
+    }
+
+    private string RoleUk
+    {
+        get => participant.Role.Values.ContainsKey("uk") ? participant.Role.Values["uk"] : "";
+        set => participant.Role.Values["uk"] = value;
+    }
+
+    private string RoleEn
+    {
+        get => participant.Role.Values.ContainsKey("en") ? participant.Role.Values["en"] : "";
+        set => participant.Role.Values["en"] = value;
+    }
+
+    private async Task OnCreateParticipant()
+    {
+        if (EventId > 0)
+            participant.EventId = EventId;
+        else
+            participant.EventId = null;
+
+        var response = await Http.PostAsJsonAsync("api/EventParticipants", participant);
+
+        if (response.IsSuccessStatusCode)
+        {
+            result = "Участник создан.";
+
+            if (EventId > 0)
+                Nav.NavigateTo($"/participants/{EventId}");
+        }
+        else
+        {
+            result = "Ошибка: " + await response.Content.ReadAsStringAsync();
+        }
+    }
+}

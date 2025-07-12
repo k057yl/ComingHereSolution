@@ -19,11 +19,16 @@ namespace ComingHereServer.Data
         public DbSet<EventPhoto> EventPhotos { get; set; }
         public DbSet<EventCategory> EventCategories { get; set; }
 
+        // Новые сущности
+        public DbSet<EventOrganizer> EventOrganizers { get; set; }
+        public DbSet<EventParticipant> EventParticipants { get; set; }
+        public DbSet<OrganizerCategory> OrganizerCategories { get; set; }
+        public DbSet<ParticipantCategory> ParticipantCategories { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Связи
             builder.Entity<EventAttendee>()
                 .HasOne(e => e.Event)
                 .WithMany(e => e.Attendees)
@@ -46,6 +51,21 @@ namespace ComingHereServer.Data
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Новая связь: Event -> EventOrganizer
+            builder.Entity<Event>()
+                .HasOne(e => e.Organizer)
+                .WithMany(o => o.Events)
+                .HasForeignKey(e => e.OrganizerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Новая связь: EventParticipant -> Event
+            builder.Entity<EventParticipant>()
+                .HasOne(p => p.Event)
+                .WithMany(e => e.Participants)
+                .HasForeignKey(p => p.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // JSON-конвертер для LocalizedString
             var options = new JsonSerializerOptions();
 
             var localizedStringConverter = new ValueConverter<LocalizedString, string>(
@@ -56,10 +76,19 @@ namespace ComingHereServer.Data
                 }
             );
 
+            // Применяем к Event
             builder.Entity<Event>().Property(e => e.Name).HasConversion(localizedStringConverter).HasColumnType("jsonb");
             builder.Entity<Event>().Property(e => e.Description).HasConversion(localizedStringConverter).HasColumnType("jsonb");
             builder.Entity<Event>().Property(e => e.Location).HasConversion(localizedStringConverter).HasColumnType("jsonb");
-            builder.Entity<Event>().Property(e => e.OrganizerDisplayName).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+
+            // Применяем к EventOrganizer
+            builder.Entity<EventOrganizer>().Property(o => o.Name).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+            builder.Entity<EventOrganizer>().Property(o => o.Description).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+            builder.Entity<EventOrganizer>().Property(o => o.Address).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+
+            // Применяем к EventParticipant
+            builder.Entity<EventParticipant>().Property(p => p.Name).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+            builder.Entity<EventParticipant>().Property(p => p.Role).HasConversion(localizedStringConverter).HasColumnType("jsonb");
         }
     }
 }

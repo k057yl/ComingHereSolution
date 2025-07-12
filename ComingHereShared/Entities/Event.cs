@@ -30,21 +30,21 @@
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        // Цена и участники
+        // Цена и вместимость
         public decimal? Price { get; set; }
         public int? MaxAttendees { get; set; }
 
         // Фото
         public ICollection<EventPhoto> Photos { get; set; } = new List<EventPhoto>();
 
-        // Организатор
-        public string OrganizerId { get; set; } = null!;
-        public ApplicationUser Organizer { get; set; } = null!;
+        // Новый организатор (уже не ApplicationUser напрямую)
+        public int OrganizerId { get; set; }
+        public EventOrganizer Organizer { get; set; } = null!;
 
-        // 💬 Название компании / бренда организатора
-        public LocalizedString OrganizerDisplayName { get; set; } = new();
+        // Участники (музыканты, спикеры и т.п.)
+        public ICollection<EventParticipant> Participants { get; set; } = new List<EventParticipant>();
 
-        // Участники
+        // Посетители — остаются, но не используем пока
         public ICollection<EventAttendee> Attendees { get; set; } = new List<EventAttendee>();
 
         // Категория

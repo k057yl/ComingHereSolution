@@ -51,8 +51,38 @@
                 </NavLink>
             </div>
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="categories">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Управление категориями
+                <NavLink class="nav-link" href="event-categories">
+                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Управление категориями событий
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="organizer-categories">
+                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Управление категориями организаторов
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="participant-categories">
+                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Управление категориями участников
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="create-organizer">
+                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Создать организатора
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="organizers">
+                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Организаторы
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"create-participant/{EventId}")">
+                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Создать участника
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"participants/{EventId}")">
+                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Участники
                 </NavLink>
             </div>
         }
@@ -71,6 +101,8 @@
     private bool isAuthenticated;
     private string? userEmail;
     private bool isGala;
+    [Parameter]
+    public int EventId { get; set; }
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 

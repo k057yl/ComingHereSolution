@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ComingHereServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250703064459_LocalizedFieldsSupport")]
-    partial class LocalizedFieldsSupport
+    [Migration("20250712071145_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -124,13 +124,8 @@ namespace ComingHereServer.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.Property<string>("OrganizerDisplayName")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("OrganizerId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("OrganizerId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("numeric");
@@ -186,6 +181,93 @@ namespace ComingHereServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EventCategories");
+                });
+
+            modelBuilder.Entity("ComingHereShared.Entities.EventOrganizer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Instagram")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Telegram")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Website")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("EventOrganizers");
+                });
+
+            modelBuilder.Entity("ComingHereShared.Entities.EventParticipant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Contact")
+                        .HasColumnType("text");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Instagram")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Website")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("EventParticipants");
                 });
 
             modelBuilder.Entity("ComingHereShared.Entities.EventPhoto", b =>
@@ -350,10 +432,10 @@ namespace ComingHereServer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ComingHereShared.Entities.ApplicationUser", "Organizer")
-                        .WithMany()
+                    b.HasOne("ComingHereShared.Entities.EventOrganizer", "Organizer")
+                        .WithMany("Events")
                         .HasForeignKey("OrganizerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -378,6 +460,28 @@ namespace ComingHereServer.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ComingHereShared.Entities.EventOrganizer", b =>
+                {
+                    b.HasOne("ComingHereShared.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("ComingHereShared.Entities.EventParticipant", b =>
+                {
+                    b.HasOne("ComingHereShared.Entities.Event", "Event")
+                        .WithMany("Participants")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
                 });
 
             modelBuilder.Entity("ComingHereShared.Entities.EventPhoto", b =>
@@ -446,10 +550,17 @@ namespace ComingHereServer.Migrations
                 {
                     b.Navigation("Attendees");
 
+                    b.Navigation("Participants");
+
                     b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("ComingHereShared.Entities.EventCategory", b =>
+                {
+                    b.Navigation("Events");
+                });
+
+            modelBuilder.Entity("ComingHereShared.Entities.EventOrganizer", b =>
                 {
                     b.Navigation("Events");
                 });

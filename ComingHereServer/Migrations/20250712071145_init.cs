@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ComingHereServer.Migrations
 {
     /// <inheritdoc />
-    public partial class LocalizedFieldsSupport : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -171,6 +171,33 @@ namespace ComingHereServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EventOrganizers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ApplicationUserId = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "jsonb", nullable: false),
+                    Description = table.Column<string>(type: "jsonb", nullable: false),
+                    Address = table.Column<string>(type: "jsonb", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    Website = table.Column<string>(type: "text", nullable: true),
+                    Telegram = table.Column<string>(type: "text", nullable: true),
+                    Instagram = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventOrganizers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventOrganizers_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Events",
                 columns: table => new
                 {
@@ -185,23 +212,22 @@ namespace ComingHereServer.Migrations
                     Longitude = table.Column<double>(type: "double precision", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: true),
                     MaxAttendees = table.Column<int>(type: "integer", nullable: true),
-                    OrganizerId = table.Column<string>(type: "text", nullable: false),
-                    OrganizerDisplayName = table.Column<string>(type: "jsonb", nullable: false),
+                    OrganizerId = table.Column<int>(type: "integer", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Events_AspNetUsers_OrganizerId",
-                        column: x => x.OrganizerId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Events_EventCategories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "EventCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Events_EventOrganizers_OrganizerId",
+                        column: x => x.OrganizerId,
+                        principalTable: "EventOrganizers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -226,6 +252,32 @@ namespace ComingHereServer.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_EventAttendees_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventParticipants",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "jsonb", nullable: false),
+                    Role = table.Column<string>(type: "jsonb", nullable: false),
+                    Bio = table.Column<string>(type: "text", nullable: true),
+                    Instagram = table.Column<string>(type: "text", nullable: true),
+                    Website = table.Column<string>(type: "text", nullable: true),
+                    Contact = table.Column<string>(type: "text", nullable: true),
+                    Order = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventParticipants", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventParticipants_Events_EventId",
                         column: x => x.EventId,
                         principalTable: "Events",
                         principalColumn: "Id",
@@ -300,6 +352,16 @@ namespace ComingHereServer.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EventOrganizers_ApplicationUserId",
+                table: "EventOrganizers",
+                column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventParticipants_EventId",
+                table: "EventParticipants",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EventPhotos_EventId",
                 table: "EventPhotos",
                 column: "EventId");
@@ -337,6 +399,9 @@ namespace ComingHereServer.Migrations
                 name: "EventAttendees");
 
             migrationBuilder.DropTable(
+                name: "EventParticipants");
+
+            migrationBuilder.DropTable(
                 name: "EventPhotos");
 
             migrationBuilder.DropTable(
@@ -346,10 +411,13 @@ namespace ComingHereServer.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "EventCategories");
 
             migrationBuilder.DropTable(
-                name: "EventCategories");
+                name: "EventOrganizers");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

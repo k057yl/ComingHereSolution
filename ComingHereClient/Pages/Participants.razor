@@ -1,0 +1,63 @@
+﻿@page "/participants/{EventId:int}"
+@using ComingHereShared.Entities
+@inject HttpClient Http
+
+<h2>Участники события @EventId</h2>
+
+@if (participants == null)
+{
+    <p>Загрузка...</p>
+}
+else if (!participants.Any())
+{
+    <p>Участников пока нет.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Имя (uk)</th>
+                <th>Роль (uk)</th>
+                <th>Биография</th>
+                <th>Контакты</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in participants)
+            {
+                <tr>
+                    <td>@p.Name?.Values.GetValueOrDefault("uk")</td>
+                    <td>@p.Role?.Values.GetValueOrDefault("uk")</td>
+                    <td>@p.Bio</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(p.Instagram))
+                        {
+                            <div>Instagram: @p.Instagram</div>
+                        }
+                        @if (!string.IsNullOrEmpty(p.Website))
+                        {
+                            <div>Website: @p.Website</div>
+                        }
+                        @if (!string.IsNullOrEmpty(p.Contact))
+                        {
+                            <div>Contact: @p.Contact</div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private List<EventParticipant> participants;
+
+    protected override async Task OnInitializedAsync()
+    {
+        participants = await Http.GetFromJsonAsync<List<EventParticipant>>("api/EventParticipants");
+    }
+}

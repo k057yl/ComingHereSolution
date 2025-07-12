@@ -1,0 +1,77 @@
+﻿@page "/organizers"
+@using ComingHereShared.DTO
+@inject HttpClient Http
+
+<h2>Организаторы</h2>
+
+@if (organizers == null)
+{
+    <p>Загрузка...</p>
+}
+else if (!organizers.Any())
+{
+    <p>Организаторов пока нет.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Адрес</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Website</th>
+                <th>Telegram</th>
+                <th>Instagram</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in organizers)
+            {
+                <tr>
+                    <td>@o.Name?.Values["uk"]</td>
+                    <td>@o.Description?.Values["uk"]</td>
+                    <td>@o.Address?.Values["uk"]</td>
+                    <td>@o.Email</td>
+                    <td>@o.Phone</td>
+                    <td>@o.Website</td>
+                    <td>@o.Telegram</td>
+                    <td>@o.Instagram</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteOrganizer(o.Id)">Удалить</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<EventOrganizerDto> organizers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        organizers = await Http.GetFromJsonAsync<List<EventOrganizerDto>>("api/EventOrganizers");
+    }
+
+    private async Task DeleteOrganizer(int id)
+    {
+        if (!await Confirm($"Удалить организатора #{id}?")) return;
+
+        var response = await Http.DeleteAsync($"api/EventOrganizers/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            organizers.RemoveAll(o => o.Id == id);
+        }
+    }
+
+    private async Task<bool> Confirm(string message)
+    {
+        return await JS.InvokeAsync<bool>("confirm", message);
+    }
+
+    [Inject] private IJSRuntime JS { get; set; }
+}

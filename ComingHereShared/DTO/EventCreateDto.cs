@@ -26,5 +26,8 @@ namespace ComingHereShared.DTO
         [Range(1, 10000)]
         public int? MaxAttendees { get; set; }
         public int CategoryId { get; set; }
+
+        public int OrganizerId { get; set; }
+        public List<int> ParticipantIds { get; set; } = new();
     }
 }

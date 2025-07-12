@@ -3,6 +3,7 @@ using System;
 using ComingHereServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ComingHereServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250712080703_MakeOrganizerUserNullable")]
+    partial class MakeOrganizerUserNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -195,9 +198,6 @@ namespace ComingHereServer.Migrations
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("jsonb");
@@ -225,8 +225,6 @@ namespace ComingHereServer.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("EventOrganizers");
                 });
 
@@ -241,13 +239,10 @@ namespace ComingHereServer.Migrations
                     b.Property<string>("Bio")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Contact")
                         .HasColumnType("text");
 
-                    b.Property<int?>("EventId")
+                    b.Property<int>("EventId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Instagram")
@@ -268,8 +263,6 @@ namespace ComingHereServer.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
 
                     b.HasIndex("EventId");
 
@@ -296,40 +289,6 @@ namespace ComingHereServer.Migrations
                     b.HasIndex("EventId");
 
                     b.ToTable("EventPhotos");
-                });
-
-            modelBuilder.Entity("ComingHereShared.Entities.OrganizerCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrganizerCategories");
-                });
-
-            modelBuilder.Entity("ComingHereShared.Entities.ParticipantCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ParticipantCategories");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -508,27 +467,16 @@ namespace ComingHereServer.Migrations
                         .WithMany()
                         .HasForeignKey("ApplicationUserId");
 
-                    b.HasOne("ComingHereShared.Entities.OrganizerCategory", "Category")
-                        .WithMany("Organizers")
-                        .HasForeignKey("CategoryId");
-
                     b.Navigation("ApplicationUser");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("ComingHereShared.Entities.EventParticipant", b =>
                 {
-                    b.HasOne("ComingHereShared.Entities.ParticipantCategory", "Category")
-                        .WithMany("Participants")
-                        .HasForeignKey("CategoryId");
-
                     b.HasOne("ComingHereShared.Entities.Event", "Event")
                         .WithMany("Participants")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Category");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Event");
                 });
@@ -612,16 +560,6 @@ namespace ComingHereServer.Migrations
             modelBuilder.Entity("ComingHereShared.Entities.EventOrganizer", b =>
                 {
                     b.Navigation("Events");
-                });
-
-            modelBuilder.Entity("ComingHereShared.Entities.OrganizerCategory", b =>
-                {
-                    b.Navigation("Organizers");
-                });
-
-            modelBuilder.Entity("ComingHereShared.Entities.ParticipantCategory", b =>
-                {
-                    b.Navigation("Participants");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,134 @@
+﻿@page "/create-organizer"
+@using ComingHereShared.DTO
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Создать организатора</h3>
+
+<EditForm Model="organizer" OnValidSubmit="OnCreateOrganizer">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Название (uk)</label>
+        <InputText class="form-control" @bind-Value="NameUk" />
+    </div>
+
+    <div class="mb-3">
+        <label>Название (en)</label>
+        <InputText class="form-control" @bind-Value="NameEn" />
+    </div>
+
+    <div class="mb-3">
+        <label>Описание (uk)</label>
+        <InputTextArea class="form-control" @bind-Value="DescUk" />
+    </div>
+
+    <div class="mb-3">
+        <label>Описание (en)</label>
+        <InputTextArea class="form-control" @bind-Value="DescEn" />
+    </div>
+
+    <div class="mb-3">
+        <label>Адрес (uk)</label>
+        <InputText class="form-control" @bind-Value="AddressUk" />
+    </div>
+
+    <div class="mb-3">
+        <label>Адрес (en)</label>
+        <InputText class="form-control" @bind-Value="AddressEn" />
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="organizer.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label>Телефон</label>
+        <InputText class="form-control" @bind-Value="organizer.Phone" />
+    </div>
+
+    <div class="mb-3">
+        <label>Website</label>
+        <InputText class="form-control" @bind-Value="organizer.Website" />
+    </div>
+
+    <div class="mb-3">
+        <label>Telegram</label>
+        <InputText class="form-control" @bind-Value="organizer.Telegram" />
+    </div>
+
+    <div class="mb-3">
+        <label>Instagram</label>
+        <InputText class="form-control" @bind-Value="organizer.Instagram" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Создать</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(result))
+{
+    <div class="alert alert-info mt-3">@result</div>
+}
+
+@code {
+    private EventOrganizerCreateDto organizer = new()
+    {
+        Name = new() { Values = new Dictionary<string, string>() },
+        Description = new() { Values = new Dictionary<string, string>() },
+        Address = new() { Values = new Dictionary<string, string>() }
+    };
+
+    private string? result;
+
+    private string NameUk
+    {
+        get => organizer.Name.Values.ContainsKey("uk") ? organizer.Name.Values["uk"] : "";
+        set => organizer.Name.Values["uk"] = value;
+    }
+
+    private string NameEn
+    {
+        get => organizer.Name.Values.ContainsKey("en") ? organizer.Name.Values["en"] : "";
+        set => organizer.Name.Values["en"] = value;
+    }
+
+    private string DescUk
+    {
+        get => organizer.Description.Values.ContainsKey("uk") ? organizer.Description.Values["uk"] : "";
+        set => organizer.Description.Values["uk"] = value;
+    }
+
+    private string DescEn
+    {
+        get => organizer.Description.Values.ContainsKey("en") ? organizer.Description.Values["en"] : "";
+        set => organizer.Description.Values["en"] = value;
+    }
+
+    private string AddressUk
+    {
+        get => organizer.Address.Values.ContainsKey("uk") ? organizer.Address.Values["uk"] : "";
+        set => organizer.Address.Values["uk"] = value;
+    }
+
+    private string AddressEn
+    {
+        get => organizer.Address.Values.ContainsKey("en") ? organizer.Address.Values["en"] : "";
+        set => organizer.Address.Values["en"] = value;
+    }
+
+    private async Task OnCreateOrganizer()
+    {
+        var response = await Http.PostAsJsonAsync("api/EventOrganizers", organizer);
+        if (response.IsSuccessStatusCode)
+        {
+            result = "Организатор создан.";
+            Nav.NavigateTo("/organizers");
+        }
+        else
+        {
+            result = "Ошибка: " + await response.Content.ReadAsStringAsync();
+        }
+    }
+}

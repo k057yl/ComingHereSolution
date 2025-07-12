@@ -15,22 +15,20 @@
         <ValidationSummary />
 
         <div class="p-3">
-
-            <!-- Название (Украинский) -->
+            <!-- Название -->
             <div class="mb-3">
-                <label for="nameUk" class="form-label">@Loc["CreateEventPage_EventName"] (UK)</label>
-                <InputText id="nameUk" class="form-control" @bind-Value="NameUk" />
+                <label class="form-label">@Loc["CreateEventPage_EventName"] (UK)</label>
+                <InputText class="form-control" @bind-Value="NameUk" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">@Loc["CreateEventPage_EventName"] (EN)</label>
+                <InputText class="form-control" @bind-Value="NameEn" />
             </div>
 
-            <!-- Название (English) -->
+            <!-- Категория -->
             <div class="mb-3">
-                <label for="nameEn" class="form-label">@Loc["CreateEventPage_EventName"] (EN)</label>
-                <InputText id="nameEn" class="form-control" @bind-Value="NameEn" />
-            </div>
-
-            <div class="mb-3">
-                <label for="categorySelect" class="form-label">@Loc["CreateEventPage_Category"]</label>
-                <select id="categorySelect" class="form-select" @bind="newEvent.CategoryId">
+                <label class="form-label">@Loc["CreateEventPage_Category"]</label>
+                <select class="form-select" @bind="newEvent.CategoryId">
                     <option value="">-- @Loc["CreateEventPage_SelectCategory"] --</option>
                     @foreach (var category in categories)
                     {
@@ -39,66 +37,80 @@
                 </select>
             </div>
 
-            <!-- Описание (Украинский) -->
+            <!-- Описание -->
             <div class="mb-3">
-                <label for="descriptionUk" class="form-label">@Loc["CreateEventPage_EventDescription"] (UK)</label>
-                <InputTextArea id="descriptionUk" class="form-control" @bind-Value="DescriptionUk" />
+                <label class="form-label">@Loc["CreateEventPage_EventDescription"] (UK)</label>
+                <InputTextArea class="form-control" @bind-Value="DescriptionUk" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">@Loc["CreateEventPage_EventDescription"] (EN)</label>
+                <InputTextArea class="form-control" @bind-Value="DescriptionEn" />
             </div>
 
-            <!-- Описание (English) -->
+            <!-- Дата и время -->
             <div class="mb-3">
-                <label for="descriptionEn" class="form-label">@Loc["CreateEventPage_EventDescription"] (EN)</label>
-                <InputTextArea id="descriptionEn" class="form-control" @bind-Value="DescriptionEn" />
-            </div>
-
-            <div class="mb-3">
-                <label for="startTime" class="form-label">Дата и время начала</label>
-                <input type="datetime-local" id="startTime" class="form-control"
+                <label class="form-label">Дата и время начала</label>
+                <input type="datetime-local" class="form-control"
                        value="@BindDateTime(newEvent.StartTime)"
                        @oninput="e => newEvent.StartTime = ParseDateTime(e.Value?.ToString())" />
             </div>
-
             <div class="mb-3">
-                <label for="endTime" class="form-label">Дата и время окончания</label>
-                <input type="datetime-local" id="endTime" class="form-control"
+                <label class="form-label">Дата и время окончания</label>
+                <input type="datetime-local" class="form-control"
                        value="@BindDateTime(newEvent.EndTime ?? DateTime.Now)"
                        @oninput="e => newEvent.EndTime = ParseDateTime(e.Value?.ToString())" />
             </div>
 
-            <!-- Место (Украинский) -->
+            <!-- Место -->
             <div class="mb-3">
-                <label for="locationUk" class="form-label">Место (UK)</label>
-                <InputText id="locationUk" class="form-control" @bind-Value="LocationUk" />
+                <label class="form-label">Место (UK)</label>
+                <InputText class="form-control" @bind-Value="LocationUk" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Место (EN)</label>
+                <InputText class="form-control" @bind-Value="LocationEn" />
             </div>
 
-            <!-- Место (English) -->
+            <!-- Организатор -->
             <div class="mb-3">
-                <label for="locationEn" class="form-label">Место (EN)</label>
-                <InputText id="locationEn" class="form-control" @bind-Value="LocationEn" />
+                <label class="form-label">Организатор</label>
+                <select class="form-select" @bind="newEvent.OrganizerId">
+                    <option value="">-- Выбери организатора --</option>
+                    @foreach (var org in organizers)
+                    {
+                        <option value="@org.Id">@org.Name</option>
+                    }
+                </select>
             </div>
 
+            <!-- Участники -->
+            <div class="mb-3">
+                <label class="form-label">Участники</label>
+                <select class="form-select" multiple @onchange="HandleParticipantsChanged">
+                    @foreach (var p in participants)
+                    {
+                        <option value="@p.Id">@p.Name.Get("uk")</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Карта -->
             <div class="mb-4 d-flex justify-content-center">
                 <div id="map" style="height: 400px; width: 100%; max-width: 600px;"></div>
             </div>
 
-            <div class="mb-3">
-                <label for="latitude" class="form-label">Широта</label>
-                <InputNumber id="latitude" class="form-control" @bind-Value="newEvent.Latitude" />
-            </div>
+            <!-- Координаты скрыты -->
+            <input type="hidden" name="Latitude" value="@newEvent.Latitude" />
+            <input type="hidden" name="Longitude" value="@newEvent.Longitude" />
 
+            <!-- Цена и участники -->
             <div class="mb-3">
-                <label for="longitude" class="form-label">Долгота</label>
-                <InputNumber id="longitude" class="form-control" @bind-Value="newEvent.Longitude" />
+                <label class="form-label">Цена</label>
+                <InputNumber class="form-control" @bind-Value="newEvent.Price" />
             </div>
-
             <div class="mb-3">
-                <label for="price" class="form-label">Цена</label>
-                <InputNumber id="price" class="form-control" @bind-Value="newEvent.Price" />
-            </div>
-
-            <div class="mb-3">
-                <label for="maxAttendees" class="form-label">Макс. участников</label>
-                <InputNumber id="maxAttendees" class="form-control" @bind-Value="newEvent.MaxAttendees" />
+                <label class="form-label">Макс. участников</label>
+                <InputNumber class="form-control" @bind-Value="newEvent.MaxAttendees" />
             </div>
 
             <div class="text-center">
@@ -113,13 +125,16 @@
     {
         StartTime = DateTime.Now,
         Latitude = 48.9226,
-        Longitude = 24.7111
+        Longitude = 24.7111,
+        ParticipantIds = new List<int>()
     };
 
     private string? authToken;
     private string? userName;
 
     private List<EventCategoryDto> categories = new();
+    private List<EventOrganizerDto> organizers = new();
+    private List<EventParticipantDto> participants = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,11 +148,30 @@
         try
         {
             var client = HttpClientFactory.CreateClient("AuthorizedClient");
-            categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory");
+
+            categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory") ?? new();
+            organizers = await client.GetFromJsonAsync<List<EventOrganizerDto>>("api/eventorganizers") ?? new();
+            participants = await client.GetFromJsonAsync<List<EventParticipantDto>>("api/eventparticipant") ?? new();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Не удалось загрузить категории: {ex.Message}");
+            Console.WriteLine($"Ошибка загрузки данных: {ex.Message}");
+        }
+    }
+
+    private void HandleParticipantsChanged(ChangeEventArgs e)
+    {
+        newEvent.ParticipantIds.Clear();
+
+        if (e.Value is not null and string raw)
+        {
+            var selectedIds = raw.Split(",", StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(x => int.TryParse(x, out var id) ? id : (int?)null)
+                                 .Where(x => x.HasValue)
+                                 .Select(x => x!.Value)
+                                 .ToList();
+
+            newEvent.ParticipantIds.AddRange(selectedIds);
         }
     }
 

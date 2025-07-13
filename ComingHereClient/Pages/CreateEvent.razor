@@ -151,7 +151,7 @@
 
             categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory") ?? new();
             organizers = await client.GetFromJsonAsync<List<EventOrganizerDto>>("api/eventorganizers") ?? new();
-            participants = await client.GetFromJsonAsync<List<EventParticipantDto>>("api/eventparticipant") ?? new();
+            participants = await client.GetFromJsonAsync<List<EventParticipantDto>>("api/eventparticipants") ?? new();
         }
         catch (Exception ex)
         {

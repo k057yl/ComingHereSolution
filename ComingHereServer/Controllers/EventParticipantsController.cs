@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
-[Route("api/eventparticipant")]
+[Route("api/eventparticipants")]
 [Authorize(Roles = "Gala")]
 public class EventParticipantsController : ControllerBase
 {

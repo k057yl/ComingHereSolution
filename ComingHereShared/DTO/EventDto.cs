@@ -17,6 +17,7 @@ namespace ComingHereShared.DTO
         public int? MaxAttendees { get; set; }
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = "";
+        public bool IsVip { get; set; }
 
         public List<EventPhotoDto> Photos { get; set; } = new();
 
@@ -36,6 +37,7 @@ namespace ComingHereShared.DTO
                 MaxAttendees = ev.MaxAttendees,
                 CategoryId = ev.CategoryId,
                 CategoryName = ev.Category?.Name ?? "-",
+                IsVip = ev.IsVip,
                 Photos = ev.Photos.Select(p => new EventPhotoDto { Id = p.Id, PhotoUrl = p.PhotoUrl }).ToList()
             };
         }

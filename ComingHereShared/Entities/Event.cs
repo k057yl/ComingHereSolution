@@ -50,5 +50,6 @@
         // Категория
         public int CategoryId { get; set; }
         public EventCategory Category { get; set; } = null!;
+        public bool IsVip { get; set; } = false;
     }
 }

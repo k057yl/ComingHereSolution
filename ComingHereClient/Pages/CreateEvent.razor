@@ -112,6 +112,10 @@
                 <label class="form-label">Макс. участников</label>
                 <InputNumber class="form-control" @bind-Value="newEvent.MaxAttendees" />
             </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="vipCheck" @bind="newEvent.IsVip" />
+                <label class="form-check-label" for="vipCheck">VIP событие</label>
+            </div>
 
             <div class="text-center">
                 <button type="submit" class="btn btn-primary px-4">Создать</button>

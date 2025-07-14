@@ -1,27 +1,65 @@
-﻿﻿@using ComingHereShared.DTO
+﻿@using ComingHereClient.Services
+@using ComingHereShared.Constants
+@using ComingHereShared.DTO
 @inherits LayoutComponentBase
 @inject HttpClient Http
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@inject AuthService AuthService
+@inject IJSRuntime JS
 
-<div class="page">
-    <div class="sidebar-left">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4 auth">
-            @if (isAuthenticated)
-            {
-                <span class="ms-3">Привет, @userEmail!</span>
-            }
+<div class="layout">
+    <div class="top-bar d-flex justify-content-between align-items-center px-3 py-2">
+        <div>
+            <span class="hello-user">
+                @if (isAuthenticated)
+                {
+                    <span>Привет, @userEmail!</span>
+                }
+                else
+                {
+                    <span>Вы не авторизованы</span>
+                }
+            </span>
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+        <div class="d-flex align-items-center">
+            <div class="dropdown me-3">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Язык
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                    <li><a class="dropdown-item" href="#" @onclick='() => ChangeLanguage("en")'>English</a></li>
+                    <li><a class="dropdown-item" href="#" @onclick='() => ChangeLanguage("uk")'>Українська</a></li>
+                </ul>
+            </div>
 
-    <div class="sidebar-right">
-        <RightPanel />
+            @if (isAuthenticated)
+            {
+                <button class="btn btn-outline-light btn-sm" @onclick="Logout">Выйти</button>
+            }
+            else
+            {
+                <button class="btn btn-outline-light btn-sm me-2" @onclick='() => Nav.NavigateTo(ClientRoutes.Login)'>Войти</button>
+                <button class="btn btn-outline-light btn-sm" @onclick='() => Nav.NavigateTo(ClientRoutes.Register)'>Регистрация</button>
+            }
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div class="sidebar-left">
+            <NavMenu />
+        </div>
+
+        <main class="main-content">
+            <article class="content">
+                @Body
+            </article>
+        </main>
+
+        <div class="sidebar-right">
+            <RightPanel />
+        </div>
     </div>
 </div>
 
@@ -30,6 +68,18 @@
     private string? userEmail;
 
     protected override async Task OnInitializedAsync()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
+        await LoadUserInfoAsync();
+    }
+
+    private async void OnAuthStateChanged(Task<AuthenticationState> task)
+    {
+        await LoadUserInfoAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadUserInfoAsync()
     {
         try
         {
@@ -50,5 +100,21 @@
             isAuthenticated = false;
             userEmail = null;
         }
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.Logout();
+    }
+
+    private async Task ChangeLanguage(string culture)
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "blazorCulture", culture);
+        await JS.InvokeVoidAsync("location.reload");
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthStateChanged;
     }
 }

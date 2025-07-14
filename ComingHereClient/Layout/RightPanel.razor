@@ -1,5 +1,27 @@
-﻿<h3>RightPanel</h3>
+﻿@using ComingHereShared.DTO
+@inject HttpClient Http
+
+<div class="right-panel">
+    <h5>Выделенное событие</h5>
+    @if (vipEvent == null)
+    {
+        <p>Загрузка...</p>
+    }
+    else
+    {
+        <div>
+            <strong>@vipEvent.Name</strong><br />
+            <small>@vipEvent.StartTime.ToString("dd.MM.yyyy")</small><br />
+            <span class="badge bg-warning text-dark">VIP</span>
+        </div>
+    }
+</div>
 
 @code {
+    private EventDto? vipEvent;
 
+    protected override async Task OnInitializedAsync()
+    {
+        vipEvent = await Http.GetFromJsonAsync<EventDto>("api/events/vip-random");
+    }
 }

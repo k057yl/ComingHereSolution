@@ -32,9 +32,6 @@ namespace ComingHereServer.Controllers
             var organizer = await _context.EventOrganizers
                 .FirstOrDefaultAsync(o => o.ApplicationUserId == user.Id);
 
-            /*if (organizer == null)
-                return Problem("У тебя нет профиля организатора.", statusCode: 403);*/
-
             var organizerExists = await _context.EventOrganizers.AnyAsync(o => o.Id == dto.OrganizerId);
             if (!organizerExists)
                 return BadRequest("Указанный организатор не существует.");
@@ -51,7 +48,8 @@ namespace ComingHereServer.Controllers
                 Price = dto.Price,
                 MaxAttendees = dto.MaxAttendees,
                 CategoryId = dto.CategoryId,
-                OrganizerId = dto.OrganizerId
+                OrganizerId = dto.OrganizerId,
+                IsVip = dto.IsVip
             };
 
             _context.Events.Add(newEvent);
@@ -213,6 +211,23 @@ namespace ComingHereServer.Controllers
             var dtos = events.Select(ev => EventDto.FromEntity(ev, culture)).ToList();
 
             return Ok(dtos);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("vip-random")]
+        public async Task<IActionResult> GetRandomVipEvent([FromQuery] string culture = "uk")
+        {
+            var vipEvents = await _context.Events
+                .Where(e => e.IsVip)
+                .Include(e => e.Category)
+                .Include(e => e.Photos)
+                .ToListAsync();
+
+            if (!vipEvents.Any())
+                return NotFound();
+
+            var random = vipEvents[new Random().Next(vipEvents.Count)];
+            return Ok(EventDto.FromEntity(random, culture));
         }
     }
 }

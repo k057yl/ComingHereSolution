@@ -29,5 +29,6 @@ namespace ComingHereShared.DTO
 
         public int OrganizerId { get; set; }
         public List<int> ParticipantIds { get; set; } = new();
+        public bool IsVip { get; set; } = false;
     }
 }

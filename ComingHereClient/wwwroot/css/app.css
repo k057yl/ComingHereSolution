@@ -6,8 +6,22 @@ html, body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+
+}
+/*testStart
+.page {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
 }
 
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+testEnd*/
 h1:focus {
     outline: none;
 }

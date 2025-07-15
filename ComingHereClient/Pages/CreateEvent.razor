@@ -2,6 +2,8 @@
 @using ComingHereClient.Services
 @using ComingHereShared.DTO
 @using System.Text.Json;
+@using ComingHereShared.DTO.EventDtos
+@using ComingHereShared.DTO.OrganizerDtos
 @inject IJSRuntime JS
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Nav
@@ -71,6 +73,17 @@
                 <InputText class="form-control" @bind-Value="LocationEn" />
             </div>
 
+            <!-- Адрес (UK) -->
+            <div class="mb-3">
+                <label class="form-label">Адрес (UK)</label>
+                <InputText class="form-control" @bind-Value="AddressUk" />
+            </div>
+            <!-- Адрес (EN) -->
+            <div class="mb-3">
+                <label class="form-label">Адрес (EN)</label>
+                <InputText class="form-control" @bind-Value="AddressEn" />
+            </div>
+
             <!-- Организатор -->
             <div class="mb-3">
                 <label class="form-label">Организатор</label>
@@ -82,6 +95,39 @@
                     }
                 </select>
             </div>
+
+            <!-- Контактная информация -->
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => showContactInfo = !showContactInfo">
+                    @(showContactInfo ? "Скрыть контакты" : "Добавить контакты")
+                </button>
+            </div>
+
+            @if (showContactInfo)
+            {
+                <div class="border rounded p-3 mb-3">
+                    <div class="mb-2">
+                        <label class="form-label">Телефон</label>
+                        <InputText class="form-control" @bind-Value="newEvent.Details.ContactInfo.Phone" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="newEvent.Details.ContactInfo.Email" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Сайт</label>
+                        <InputText class="form-control" @bind-Value="newEvent.Details.ContactInfo.Website" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Telegram</label>
+                        <InputText class="form-control" @bind-Value="newEvent.Details.ContactInfo.Telegram" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Instagram</label>
+                        <InputText class="form-control" @bind-Value="newEvent.Details.ContactInfo.Instagram" />
+                    </div>
+                </div>
+            }
 
             <!-- Участники -->
             <div class="mb-3">
@@ -100,17 +146,17 @@
             </div>
 
             <!-- Координаты скрыты -->
-            <input type="hidden" name="Latitude" value="@newEvent.Latitude" />
-            <input type="hidden" name="Longitude" value="@newEvent.Longitude" />
+            <input type="hidden" name="Latitude" value="@newEvent.Details.Latitude" />
+            <input type="hidden" name="Longitude" value="@newEvent.Details.Longitude" />
 
             <!-- Цена и участники -->
             <div class="mb-3">
                 <label class="form-label">Цена</label>
-                <InputNumber class="form-control" @bind-Value="newEvent.Price" />
+                <InputNumber class="form-control" @bind-Value="newEvent.Details.Price" />
             </div>
             <div class="mb-3">
                 <label class="form-label">Макс. участников</label>
-                <InputNumber class="form-control" @bind-Value="newEvent.MaxAttendees" />
+                <InputNumber class="form-control" @bind-Value="newEvent.Details.MaxAttendees" />
             </div>
             <div class="form-check mb-3">
                 <input type="checkbox" class="form-check-input" id="vipCheck" @bind="newEvent.IsVip" />
@@ -128,13 +174,17 @@
     private EventCreateDto newEvent = new EventCreateDto
     {
         StartTime = DateTime.Now,
-        Latitude = 48.9226,
-        Longitude = 24.7111,
+        Details = new EventDetailsDto
+        {
+            Latitude = 48.9226,
+            Longitude = 24.7111,
+        },
         ParticipantIds = new List<int>()
     };
 
     private string? authToken;
     private string? userName;
+    private bool showContactInfo = false;
 
     private List<EventCategoryDto> categories = new();
     private List<EventOrganizerDto> organizers = new();
@@ -183,10 +233,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && newEvent.Details != null)
         {
             dotNetRef = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("startMap", newEvent.Latitude, newEvent.Longitude, dotNetRef);
+            await JS.InvokeVoidAsync("startMap", newEvent.Details.Latitude, newEvent.Details.Longitude, dotNetRef);
         }
     }
 
@@ -198,8 +248,8 @@
     [JSInvokable]
     public void UpdateCoordinates(double lat, double lng)
     {
-        newEvent.Latitude = lat;
-        newEvent.Longitude = lng;
+        newEvent.Details.Latitude = lat;
+        newEvent.Details.Longitude = lng;
         StateHasChanged();
     }
 
@@ -313,5 +363,17 @@
     {
         get => newEvent.Location.Get("en");
         set => newEvent.Location.Set("en", value);
+    }
+
+    private string AddressUk
+    {
+        get => newEvent.Details.Address.Get("uk");
+        set => newEvent.Details.Address.Set("uk", value);
+    }
+
+    private string AddressEn
+    {
+        get => newEvent.Details.Address.Get("en");
+        set => newEvent.Details.Address.Set("en", value);
     }
 }

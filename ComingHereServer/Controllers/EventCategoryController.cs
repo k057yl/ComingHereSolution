@@ -1,5 +1,5 @@
 ﻿using ComingHereServer.Data;
-using ComingHereShared.DTO;
+using ComingHereShared.DTO.EventDtos;
 using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

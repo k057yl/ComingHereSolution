@@ -1,27 +1,72 @@
-﻿@using ComingHereShared.DTO
+﻿@using ComingHereClient.Services
+@using ComingHereShared.DTO
+@using ComingHereShared.DTO.EventDtos
 @inject HttpClient Http
+@inject LocalizationService Loc
 
 <div class="right-panel">
-    <h5>Выделенное событие</h5>
+    <h5>Рекомендуем</h5>
+
     @if (vipEvent == null)
     {
         <p>Загрузка...</p>
     }
     else
     {
-        <div>
-            <strong>@vipEvent.Name</strong><br />
-            <small>@vipEvent.StartTime.ToString("dd.MM.yyyy")</small><br />
-            <span class="badge bg-warning text-dark">VIP</span>
+        <div class="vip-container @(isFading ? "fade-out" : "")">
+            <div class="vip-event">
+                <img src="@vipEvent.Photos.FirstOrDefault()?.PhotoUrl" class="vip-photo" />
+                <div class="vip-info">
+                    <strong>@vipEvent.Name</strong><br />
+                    <small>@vipEvent.StartTime.ToString("dd.MM.yyyy HH:mm")</small><br />
+                    <span>@vipEvent.Location</span><br />
+                    <span>@vipEvent.Address</span><br />
+                    <em>@vipEvent.OrganizerName</em><br />
+                    <span class="badge bg-warning text-dark">VIP</span>
+                </div>
+            </div>
         </div>
     }
 </div>
 
 @code {
     private EventDto? vipEvent;
+    private bool isFading = false;
+    private readonly TimeSpan refreshInterval = TimeSpan.FromSeconds(10);
+    private Timer? timer;
 
     protected override async Task OnInitializedAsync()
     {
-        vipEvent = await Http.GetFromJsonAsync<EventDto>("api/events/vip-random");
+        Loc.LanguageChanged += OnLanguageChanged;
+        await LoadVipEvent();
+
+        timer = new Timer(async _ =>
+        {
+            isFading = true;
+            await InvokeAsync(StateHasChanged);
+
+            await Task.Delay(500);
+            await LoadVipEvent();
+
+            isFading = false;
+            await InvokeAsync(StateHasChanged);
+        }, null, refreshInterval, refreshInterval);
+    }
+
+    private async Task LoadVipEvent()
+    {
+        vipEvent = await Http.GetFromJsonAsync<EventDto>($"api/events/vip-random?culture={Loc.CurrentCulture}");
+    }
+
+    private async Task OnLanguageChanged()
+    {
+        await LoadVipEvent();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Loc.LanguageChanged -= OnLanguageChanged;
+        timer?.Dispose();
     }
 }

@@ -5,9 +5,16 @@ window.startMap = function (lat, lng, dotNetHelper) {
         console.error("Leaflet не загружен!");
         return;
     }
+
     const mapContainer = document.getElementById('map');
     if (!mapContainer) {
         console.error("Элемент #map не найден!");
+        return;
+    }
+
+    if (mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
+        console.log("Контейнер #map еще не видим. Повторный вызов через 100мс.");
+        setTimeout(() => window.startMap(lat, lng, dotNetHelper), 100);
         return;
     }
 

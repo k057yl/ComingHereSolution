@@ -1,9 +1,13 @@
 ﻿using ComingHereShared.Entities;
 
-namespace ComingHereShared.DTO
+namespace ComingHereShared.DTO.OrganizerDtos
 {
-    public class EventOrganizerCreateDto
+    public class EventOrganizerDto
     {
+        public int Id { get; set; }
+
+        public string ApplicationUserId { get; set; } = null!;
+
         public LocalizedString Name { get; set; } = new();
         public LocalizedString Description { get; set; } = new();
         public LocalizedString Address { get; set; } = new();
@@ -13,8 +17,5 @@ namespace ComingHereShared.DTO
         public string? Website { get; set; }
         public string? Telegram { get; set; }
         public string? Instagram { get; set; }
-
-        public string? ApplicationUserId { get; set; }
-        public int? CategoryId { get; set; }
     }
 }

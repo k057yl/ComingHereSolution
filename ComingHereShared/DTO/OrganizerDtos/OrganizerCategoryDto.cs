@@ -1,4 +1,4 @@
-﻿namespace ComingHereShared.DTO
+﻿namespace ComingHereShared.DTO.OrganizerDtos
 {
     public class OrganizerCategoryDto
     {

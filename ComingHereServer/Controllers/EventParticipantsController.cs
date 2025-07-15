@@ -1,9 +1,9 @@
 ﻿using ComingHereServer.Data;
 using ComingHereShared.Entities;
-using ComingHereShared.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ComingHereShared.DTO.EventDtos;
 
 [ApiController]
 [Route("api/eventparticipants")]

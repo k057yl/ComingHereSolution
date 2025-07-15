@@ -1,6 +1,7 @@
 ﻿@page "/allevents"
 @using ComingHereClient.Services
 @using ComingHereShared.DTO
+@using ComingHereShared.DTO.EventDtos
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
 @inject NavigationManager Nav
@@ -51,11 +52,41 @@ else
                         <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
                         <p class="card-text"><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
 
-                        <p class="card-text"><strong>Место:</strong> @ev.Location (@ev.Latitude, @ev.Longitude)</p>
+                        <p class="card-text"><strong>Место:</strong> @ev.Location</p>
+                        <p class="card-text"><strong>Организатор:</strong> @ev.OrganizerName</p>
                         <div id="map-@ev.Id" class="map-container-allevent"></div>
 
                         <p class="card-text"><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
                         <p class="card-text"><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
+
+                        @if (ev.Phone is not null || ev.Email is not null || ev.Website is not null || ev.Telegram is not null || ev.Instagram is not null)
+                        {
+                            <div class="mt-2">
+                                <strong>Контакты:</strong>
+                                <ul class="list-unstyled mb-0 ms-2">
+                                    @if (!string.IsNullOrWhiteSpace(ev.Phone))
+                                    {
+                                        <li>📞 @ev.Phone</li>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(ev.Email))
+                                    {
+                                        <li>✉️ @ev.Email</li>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(ev.Website))
+                                    {
+                                        <li>🌐 <a href="@ev.Website" target="_blank">@ev.Website</a></li>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(ev.Telegram))
+                                    {
+                                        <li>📲 Telegram: <a href="https://t.me/@(ev.Telegram.TrimStart('@'))" target="_blank">@ev.Telegram</a></li>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(ev.Instagram))
+                                    {
+                                        <li>📷 Instagram: <a href="https://instagram.com/@(ev.Instagram.TrimStart('@'))" target="_blank">@ev.Instagram</a></li>
+                                    }
+                                </ul>
+                            </div>
+                        }
 
                         <div class="mt-auto d-flex justify-content-between">
                             <button class="btn btn-sm btn-primary" @onclick="() => ViewEvent(ev.Id)">👁️</button>
@@ -139,11 +170,14 @@ else
     {
         if (shouldRenderMaps && events != null)
         {
-            foreach (var ev in events)
-            {
-                await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
-            }
             shouldRenderMaps = false;
+            await InvokeAsync(async () =>
+            {
+                foreach (var ev in events)
+                {
+                    await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
+                }
+            });
         }
     }
 

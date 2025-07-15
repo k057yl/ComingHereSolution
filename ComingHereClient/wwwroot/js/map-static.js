@@ -12,6 +12,12 @@ window.renderStaticMap = function (mapId, lat, lng) {
         return;
     }
 
+    if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+        console.log(`Контейнер ${mapId} еще не видим. Повторный вызов через 100мс.`);
+        setTimeout(() => window.renderStaticMap(mapId, lat, lng), 100);
+        return;
+    }
+
     if (window._maps[mapId]) {
         try {
             window._maps[mapId].remove();

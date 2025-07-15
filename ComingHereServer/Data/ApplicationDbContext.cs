@@ -18,12 +18,12 @@ namespace ComingHereServer.Data
         public DbSet<EventAttendee> EventAttendees { get; set; }
         public DbSet<EventPhoto> EventPhotos { get; set; }
         public DbSet<EventCategory> EventCategories { get; set; }
-
-        // Новые сущности
         public DbSet<EventOrganizer> EventOrganizers { get; set; }
         public DbSet<EventParticipant> EventParticipants { get; set; }
         public DbSet<OrganizerCategory> OrganizerCategories { get; set; }
         public DbSet<ParticipantCategory> ParticipantCategories { get; set; }
+        public DbSet<EventDetails> EventDetails { get; set; }
+        public DbSet<EventContactInfo> EventContactInfos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -51,18 +51,32 @@ namespace ComingHereServer.Data
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Новая связь: Event -> EventOrganizer
+            // Связь: Event -> Organizer
             builder.Entity<Event>()
                 .HasOne(e => e.Organizer)
                 .WithMany(o => o.Events)
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Новая связь: EventParticipant -> Event
+            // Связь: Participant -> Event
             builder.Entity<EventParticipant>()
                 .HasOne(p => p.Event)
                 .WithMany(e => e.Participants)
                 .HasForeignKey(p => p.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Связь: Event -> EventDetails (1:1)
+            builder.Entity<Event>()
+                .HasOne(e => e.Details)
+                .WithOne(d => d.Event)
+                .HasForeignKey<EventDetails>(d => d.Id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Связь: EventDetails -> EventContactInfo (1:1)
+            builder.Entity<EventDetails>()
+                .HasOne(d => d.ContactInfo)
+                .WithOne(ci => ci.EventDetails)
+                .HasForeignKey<EventDetails>(d => d.ContactInfoId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // JSON-конвертер для LocalizedString
@@ -80,6 +94,9 @@ namespace ComingHereServer.Data
             builder.Entity<Event>().Property(e => e.Name).HasConversion(localizedStringConverter).HasColumnType("jsonb");
             builder.Entity<Event>().Property(e => e.Description).HasConversion(localizedStringConverter).HasColumnType("jsonb");
             builder.Entity<Event>().Property(e => e.Location).HasConversion(localizedStringConverter).HasColumnType("jsonb");
+
+            // Применяем к EventDetails
+            builder.Entity<EventDetails>().Property(d => d.Address).HasConversion(localizedStringConverter).HasColumnType("jsonb");
 
             // Применяем к EventOrganizer
             builder.Entity<EventOrganizer>().Property(o => o.Name).HasConversion(localizedStringConverter).HasColumnType("jsonb");

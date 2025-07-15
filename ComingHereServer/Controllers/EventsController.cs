@@ -1,5 +1,5 @@
 ﻿using ComingHereServer.Data;
-using ComingHereShared.DTO;
+using ComingHereShared.DTO.EventDtos;
 using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -29,9 +29,6 @@ namespace ComingHereServer.Controllers
             if (user == null)
                 return Unauthorized("Пользователь не найден.");
 
-            var organizer = await _context.EventOrganizers
-                .FirstOrDefaultAsync(o => o.ApplicationUserId == user.Id);
-
             var organizerExists = await _context.EventOrganizers.AnyAsync(o => o.Id == dto.OrganizerId);
             if (!organizerExists)
                 return BadRequest("Указанный организатор не существует.");
@@ -43,13 +40,25 @@ namespace ComingHereServer.Controllers
                 Location = dto.Location,
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime,
-                Latitude = dto.Latitude,
-                Longitude = dto.Longitude,
-                Price = dto.Price,
-                MaxAttendees = dto.MaxAttendees,
                 CategoryId = dto.CategoryId,
                 OrganizerId = dto.OrganizerId,
-                IsVip = dto.IsVip
+                IsVip = dto.IsVip,
+                Details = new EventDetails
+                {
+                    Address = dto.Details.Address,
+                    Price = dto.Details.Price,
+                    MaxAttendees = dto.Details.MaxAttendees,
+                    Latitude = dto.Details.Latitude,
+                    Longitude = dto.Details.Longitude,
+                    ContactInfo = new EventContactInfo
+                    {
+                        Phone = dto.Details.ContactInfo.Phone,
+                        Email = dto.Details.ContactInfo.Email,
+                        Website = dto.Details.ContactInfo.Website,
+                        Telegram = dto.Details.ContactInfo.Telegram,
+                        Instagram = dto.Details.ContactInfo.Instagram
+                    }
+                }
             };
 
             _context.Events.Add(newEvent);
@@ -118,6 +127,8 @@ namespace ComingHereServer.Controllers
             var ev = await _context.Events
                 .Include(e => e.Photos)
                 .Include(e => e.Category)
+                .Include(e => e.Details)
+                .ThenInclude(d => d.ContactInfo)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == id);
 
@@ -150,7 +161,7 @@ namespace ComingHereServer.Controllers
 
             return NoContent();
         }
-
+        /*
         [Authorize]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateEvent(int id, EventCreateDto dto)
@@ -179,7 +190,7 @@ namespace ComingHereServer.Controllers
 
             return Ok();
         }
-
+        */
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAllEvents([FromQuery] string culture = "uk")
@@ -188,6 +199,9 @@ namespace ComingHereServer.Controllers
                 .AsNoTracking()
                 .Include(e => e.Photos)
                 .Include(e => e.Category)
+                .Include(e => e.Details)
+                    .ThenInclude(d => d.ContactInfo)
+                .Include(e => e.Organizer)
                 .ToListAsync();
 
             var dtos = events.Select(ev => EventDto.FromEntity(ev, culture)).ToList();
@@ -206,6 +220,8 @@ namespace ComingHereServer.Controllers
                 .AsNoTracking()
                 .Include(e => e.Photos)
                 .Include(e => e.Category)
+                .Include(e => e.Details)
+                .ThenInclude(d => d.ContactInfo)
                 .ToListAsync();
 
             var dtos = events.Select(ev => EventDto.FromEntity(ev, culture)).ToList();
@@ -220,6 +236,9 @@ namespace ComingHereServer.Controllers
             var vipEvents = await _context.Events
                 .Where(e => e.IsVip)
                 .Include(e => e.Category)
+                .Include(e => e.Details)
+                    .ThenInclude(d => d.ContactInfo)
+                .Include(e => e.Organizer)
                 .Include(e => e.Photos)
                 .ToListAsync();
 

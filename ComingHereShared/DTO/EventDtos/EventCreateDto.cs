@@ -1,7 +1,7 @@
 ﻿using ComingHereShared.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace ComingHereShared.DTO
+namespace ComingHereShared.DTO.EventDtos
 {
     public class EventCreateDto
     {
@@ -20,15 +20,16 @@ namespace ComingHereShared.DTO
         [Range(-180, 180)]
         public double Longitude { get; set; }
 
-        [Range(0, 100000)]
-        public decimal? Price { get; set; }
-
-        [Range(1, 10000)]
-        public int? MaxAttendees { get; set; }
+        // Категория и организатор
         public int CategoryId { get; set; }
-
         public int OrganizerId { get; set; }
+
+        // Участники
         public List<int> ParticipantIds { get; set; } = new();
+
         public bool IsVip { get; set; } = false;
+
+        // Вложенные сущности
+        public EventDetailsDto Details { get; set; } = new();
     }
 }

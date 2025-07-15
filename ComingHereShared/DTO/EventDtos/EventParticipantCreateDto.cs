@@ -1,6 +1,6 @@
 ﻿using ComingHereShared.Entities;
 
-namespace ComingHereShared.DTO
+namespace ComingHereShared.DTO.EventDtos
 {
     public class EventParticipantCreateDto
     {

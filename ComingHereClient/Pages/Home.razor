@@ -10,24 +10,26 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject LocalizationService Loc
 
-<div class="main-container">
-    <h1>@Loc["HomePage_Hello"]</h1>
+<div class="main-wrapper">
+    <div class="main-container">
+        <h1>@Loc["HomePage_Hello"]</h1>
 
-    <p>
-        @Loc["HomePage_WelcomeMessage_Part1"]
-        @Loc["HomePage_WelcomeMessage_Part2"]
-        @Loc["HomePage_WelcomeMessage_Part3"]
-        @Loc["HomePage_WelcomeMessage_Part4"]
-        @Loc["HomePage_WelcomeMessage_Part5"]
-    </p>
+        <p>
+            @Loc["HomePage_WelcomeMessage_Part1"]
+            @Loc["HomePage_WelcomeMessage_Part2"]
+            @Loc["HomePage_WelcomeMessage_Part3"]
+            @Loc["HomePage_WelcomeMessage_Part4"]
+            @Loc["HomePage_WelcomeMessage_Part5"]
+        </p>
 
-    <div class="map-container">
-        <div class="map-legend">
-            <div><img src="pic/marker-green.png" class="legend-marker" /> @Loc["HomePage_Map_Today"]</div>
-            <div><img src="pic/marker-yellow.png" class="legend-marker" /> @Loc["HomePage_Map_ThisWeek"]</div>
-            <div><img src="pic/marker-blue.png" class="legend-marker" /> @Loc["HomePage_Map_Later"]</div>
+        <div class="map-container">
+            <div class="map-legend">
+                <div><img src="pic/marker-green.png" class="legend-marker" /> @Loc["HomePage_Map_Today"]</div>
+                <div><img src="pic/marker-yellow.png" class="legend-marker" /> @Loc["HomePage_Map_ThisWeek"]</div>
+                <div><img src="pic/marker-blue.png" class="legend-marker" /> @Loc["HomePage_Map_Later"]</div>
+            </div>
+            <div id="all-events-map" style="height: 500px; width: 100%;"></div>
         </div>
-        <div id="all-events-map" style="height: 500px; width: 100%;"></div>
     </div>
 </div>
 

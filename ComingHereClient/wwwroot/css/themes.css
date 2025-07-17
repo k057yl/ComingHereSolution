@@ -1,0 +1,19 @@
+﻿:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --top-bar-bg: #002244;
+    --sidebar-bg: #003366;
+    --sidebar-text: white;
+    --background-image: url('/pic/light-theme.png');
+    --logo-image: url('/pic/Logo_v1_light.png');
+}
+
+[data-theme='dark'] {
+    --bg-color: #121212;
+    --text-color: #f0f0f0;
+    --top-bar-bg: #000a1f;
+    --sidebar-bg: #1a1a2e;
+    --sidebar-text: #ddd;
+    --background-image: url('/pic/dark-theme.png');
+    --logo-image: url('/pic/Logo_v1_dark.png');
+}

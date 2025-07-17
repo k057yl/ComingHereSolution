@@ -9,9 +9,17 @@
 @inject IJSRuntime JS
 
 <div class="layout">
-    <div class="top-bar d-flex justify-content-between align-items-center px-3 py-2">
-        <div>
-            <span class="top-bar-hello-user">
+    <div class="top-bar">
+        <div class="top-left">
+            <div class="logo-img"></div>
+        </div>
+
+        <div class="top-center">
+            <!-- пока пусто -->
+        </div>
+
+        <div class="top-right">
+            <div class="greeting">
                 @if (isAuthenticated)
                 {
                     <span>Привет, @userEmail!</span>
@@ -20,29 +28,32 @@
                 {
                     <span>Вы не авторизованы</span>
                 }
-            </span>
-        </div>
-
-        <div class="d-flex align-items-center">
-            <div class="dropdown me-3">
-                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    Язык
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                    <li><a class="dropdown-item" href="#" @onclick='() => ChangeLanguage("en")'>English</a></li>
-                    <li><a class="dropdown-item" href="#" @onclick='() => ChangeLanguage("uk")'>Українська</a></li>
-                </ul>
             </div>
 
-            @if (isAuthenticated)
-            {
-                <button class="btn btn-outline-light btn-sm" @onclick="Logout">Выйти</button>
-            }
-            else
-            {
-                <button class="btn btn-outline-light btn-sm me-2" @onclick='() => Nav.NavigateTo(ClientRoutes.Login)'>Войти</button>
-                <button class="btn btn-outline-light btn-sm" @onclick='() => Nav.NavigateTo(ClientRoutes.Register)'>Регистрация</button>
-            }
+            <div class="button-row">
+                <button class="custom-btn" @onclick="ToggleTheme">Тема</button>
+
+                <div class="language-dropdown">
+                    <button class="custom-btn" @onclick="ToggleLangMenu">Язык</button>
+                    @if (langMenuVisible)
+                    {
+                        <ul class="lang-menu">
+                            <li><a href="#" @onclick='() => ChangeLanguage("en")'>English</a></li>
+                            <li><a href="#" @onclick='() => ChangeLanguage("uk")'>Українська</a></li>
+                        </ul>
+                    }
+                </div>
+
+                @if (isAuthenticated)
+                {
+                    <button class="custom-btn" @onclick="Logout">Выйти</button>
+                }
+                else
+                {
+                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Login)'>Войти</button>
+                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Register)'>Регистрация</button>
+                }
+            </div>
         </div>
     </div>
 
@@ -66,6 +77,7 @@
 @code {
     private bool isAuthenticated = false;
     private string? userEmail;
+    private bool langMenuVisible = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +123,16 @@
     {
         await JS.InvokeVoidAsync("localStorage.setItem", "blazorCulture", culture);
         await JS.InvokeVoidAsync("location.reload");
+    }
+
+    private async Task ToggleTheme()
+    {
+        await JS.InvokeVoidAsync("toggleTheme");
+    }
+
+    private void ToggleLangMenu()
+    {
+        langMenuVisible = !langMenuVisible;
     }
 
     public void Dispose()

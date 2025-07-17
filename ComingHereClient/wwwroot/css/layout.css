@@ -36,8 +36,8 @@
 
 .top-bar {
     height: 80px;
-    background-color: #002244;
-    color: white;
+    background-color: var(--top-bar-bg);
+    color: var(--text-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -45,15 +45,101 @@
     flex-shrink: 0;
 }
 
-.top-bar-hello-user {
-    font-size: 1rem;
+.top-left {
+    height: 80px;
+    width: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.logo-img {
+    height: 80px;
+    width: 120px;
+    background-image: var(--logo-image);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.top-center {
+    flex: 1;
+}
+
+.top-right {
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 5px 10px;
+    box-sizing: border-box;
+}
+
+.greeting {
+    flex: none;
+    color: var(--sidebar-text);
+    text-align: right;
+    margin-bottom: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.button-row {
+    color: var(--sidebar-text);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.custom-btn {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 4px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+    .custom-btn:hover {
+        background-color: rgba(255,255,255,0.2);
+    }
+
+.language-dropdown {
+    position: relative;
+}
+
+.lang-menu {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background-color: #222;
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    border: 1px solid #555;
+    border-radius: 4px;
+    z-index: 1000;
+}
+
+    .lang-menu li {
+        padding: 4px 12px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .lang-menu li:hover {
+            background-color: #444;
+        }
 
 .sidebar-left,
 .sidebar-right {
     width: 260px;
-    background-color: #003366;
-    color: white;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
     padding: 1rem;
     flex-shrink: 0;
     overflow-y: auto;

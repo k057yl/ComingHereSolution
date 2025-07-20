@@ -5,12 +5,14 @@ using ComingHereShared.Constants;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+// HttpClient дл€ статики (локализаци€)
 builder.Services.AddHttpClient("StaticFilesClient", client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
@@ -43,4 +45,20 @@ builder.Services.AddAuthorizationCore();
 
 builder.Services.AddScoped<LocalizationService>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+// ѕредзагрузка локализации до запуска приложени€
+try
+{
+    var js = host.Services.GetRequiredService<IJSRuntime>();
+    var culture = await js.InvokeAsync<string>("localStorage.getItem", "blazorCulture") ?? "uk";
+
+    var loc = host.Services.GetRequiredService<LocalizationService>();
+    await loc.LoadAsync(culture);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Localization load failed: {ex.Message}");
+}
+
+await host.RunAsync();

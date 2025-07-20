@@ -1,19 +1,33 @@
 ﻿:root {
+    /*GeneralSettings*/
     --bg-color: #ffffff;
     --text-color: #000000;
+    --background-image: url('/pic/background_map_light.png');
+    --logo-image: url('/pic/Logo_v1_light.png');
+    /*AllPanels*/
     --top-bar-bg: #002244;
     --sidebar-bg: #003366;
     --sidebar-text: white;
-    --background-image: url('/pic/light-theme.png');
-    --logo-image: url('/pic/Logo_v1_light.png');
+    /*HomePage*/
+    --background-home-content: #ffffff;
+    --background-home-map-container: #e8e7e7;
+    --general-map-overlay-color: transparent;
+    --background-home-map-legend: #dbe1dd;
 }
 
 [data-theme='dark'] {
+    /*GeneralSettings*/
     --bg-color: #121212;
     --text-color: #f0f0f0;
-    --top-bar-bg: #000a1f;
-    --sidebar-bg: #1a1a2e;
-    --sidebar-text: #ddd;
-    --background-image: url('/pic/dark-theme.png');
+    --background-image: url('/pic/background_map_dark.png');
     --logo-image: url('/pic/Logo_v1_dark.png');
+    /*AllPanels*/
+    --top-bar-bg: #000a1f;
+    --sidebar-bg: #393953;
+    --sidebar-text: #ddd;
+    /*HomePage*/
+    --background-home-content: #ababab;
+    --background-home-map-container: #9c9a9a;
+    --general-map-overlay-color: rgba(50, 50, 50, 0.3);
+    --background-home-map-legend: #828181;
 }

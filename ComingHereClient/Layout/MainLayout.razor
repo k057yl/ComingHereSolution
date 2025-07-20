@@ -7,6 +7,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject AuthService AuthService
 @inject IJSRuntime JS
+@inject LocalizationService Loc
 
 <div class="layout">
     <div class="top-bar">
@@ -33,13 +34,13 @@
             <div class="button-row">
                 <button class="custom-btn" @onclick="ToggleTheme">Тема</button>
 
-                <div class="language-dropdown">
+                <div class="language-dropdown" id="langDropdown">
                     <button class="custom-btn" @onclick="ToggleLangMenu">Язык</button>
                     @if (langMenuVisible)
                     {
                         <ul class="lang-menu">
-                            <li><a href="#" @onclick='() => ChangeLanguage("en")'>English</a></li>
-                            <li><a href="#" @onclick='() => ChangeLanguage("uk")'>Українська</a></li>
+                            <li @onclick='() => ChangeLanguage("en")'>English</li>
+                            <li @onclick='() => ChangeLanguage("uk")'>Українська</li>
                         </ul>
                     }
                 </div>
@@ -78,6 +79,7 @@
     private bool isAuthenticated = false;
     private string? userEmail;
     private bool langMenuVisible = false;
+    private DotNetObjectReference<MainLayout>? dotNetRef;
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,10 +135,27 @@
     private void ToggleLangMenu()
     {
         langMenuVisible = !langMenuVisible;
+
+        if (langMenuVisible)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            JS.InvokeVoidAsync("registerOutsideClickHandler", "langDropdown", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public void CloseLangMenu()
+    {
+        if (langMenuVisible)
+        {
+            langMenuVisible = false;
+            StateHasChanged();
+        }
     }
 
     public void Dispose()
     {
         AuthStateProvider.AuthenticationStateChanged -= OnAuthStateChanged;
+        dotNetRef?.Dispose();
     }
 }

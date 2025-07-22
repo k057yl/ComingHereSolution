@@ -2,11 +2,9 @@
 {
     public static class ApiUrls
     {
-        public const string ApiBaseUrl = "https://localhost:7001/";
-        public static readonly string[] AllowedCorsOrigins = new[]
-        {
-        "https://localhost:7001"
-    };
+        public const string ClientOrigin = "https://localhost:7184";
+        public const string GatewayUrl = "https://localhost:5001";
+        public const string ServerUrl = "https://localhost:7255";
     }
 
     public static class ClientRoutes

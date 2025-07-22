@@ -21,13 +21,13 @@ builder.Services.AddHttpClient("StaticFilesClient", client =>
 // Клиент без авторизации
 builder.Services.AddHttpClient("PublicClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:5001/");
+    client.BaseAddress = new Uri(ApiUrls.GatewayUrl);
 });
 
 // Клиент с авторизацией
 builder.Services.AddHttpClient("AuthorizedClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:5001/");
+    client.BaseAddress = new Uri(ApiUrls.GatewayUrl);
 })
 .AddHttpMessageHandler<AuthorizationMessageHandler>();
 

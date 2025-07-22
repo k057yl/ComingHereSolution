@@ -1,3 +1,5 @@
+using ComingHereShared.Constants;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddReverseProxy()
@@ -18,7 +20,7 @@ builder.Services.AddReverseProxy()
                 ClusterId = "main-server",
                 Destinations = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig>
                 {
-                    { "d1", new() { Address = "https://localhost:7255/" } }//7001
+                    { "d1", new() { Address = ApiUrls.ServerUrl} }
                 }
             }
         }

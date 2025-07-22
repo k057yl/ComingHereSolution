@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ComingHereServer.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/events")]
+    //[Route("api/[controller]")]
     public class EventsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

@@ -2,14 +2,11 @@
 {
     public static class ApiUrls
     {
-        public const string ApiBaseUrl = "https://localhost:7255/";
-
+        public const string ApiBaseUrl = "https://localhost:7001/";
         public static readonly string[] AllowedCorsOrigins = new[]
         {
-            "https://localhost:7184",
-            "http://localhost:5000",
-            "http://localhost:5173"
-        };
+        "https://localhost:7001"
+    };
     }
 
     public static class ClientRoutes

@@ -11,7 +11,8 @@ using System.Security.Claims;
 namespace ComingHereServer.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/account")]
+    //[Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;

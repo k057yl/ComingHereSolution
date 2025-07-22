@@ -21,13 +21,13 @@ builder.Services.AddHttpClient("StaticFilesClient", client =>
 // Клиент без авторизации
 builder.Services.AddHttpClient("PublicClient", client =>
 {
-    client.BaseAddress = new Uri(ApiUrls.ApiBaseUrl);
+    client.BaseAddress = new Uri("https://localhost:5001/");
 });
 
 // Клиент с авторизацией
 builder.Services.AddHttpClient("AuthorizedClient", client =>
 {
-    client.BaseAddress = new Uri(ApiUrls.ApiBaseUrl);
+    client.BaseAddress = new Uri("https://localhost:5001/");
 })
 .AddHttpMessageHandler<AuthorizationMessageHandler>();
 
@@ -47,7 +47,6 @@ builder.Services.AddScoped<LocalizationService>();
 
 var host = builder.Build();
 
-// Предзагрузка локализации до запуска приложения
 try
 {
     var js = host.Services.GetRequiredService<IJSRuntime>();

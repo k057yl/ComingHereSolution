@@ -14,23 +14,46 @@
 {
     <div class="mb-3 text-center">
         <label>@Loc["AllEventsPage_Filter"]</label>
+
         <select @onchange="OnCategoryChanged" class="form-select w-auto d-inline-block ms-2">
             <option value="">@Loc["AllEventsPage_AllCategory"]</option>
             @foreach (var category in categories)
             {
-                <option value="@category.Id">@category.Name</option>
+                <option value="@category.Id" selected="@(selectedCategoryId == category.Id)">
+                    @category.Name
+                </option>
             }
         </select>
+
+        <input type="date" 
+               value="@(startDateFilter?.ToString("yyyy-MM-dd") ?? "")" 
+               @onchange="OnStartDateChanged" 
+               class="form-control d-inline-block w-auto ms-2" />
+
+        <input type="date" 
+               value="@(endDateFilter?.ToString("yyyy-MM-dd") ?? "")" 
+               @onchange="OnEndDateChanged" 
+               class="form-control d-inline-block w-auto ms-2" />
+
+        <select value="@sortOrder" @onchange="OnSortOrderChanged" class="form-select w-auto d-inline-block ms-2">
+            <option value="asc" selected="@(sortOrder == "asc")">Сначала ближние</option>
+            <option value="desc" selected="@(sortOrder == "desc")">Сначала дальние</option>
+        </select>
+
+        <label class="ms-3">
+            <input type="checkbox" checked="@showPastEvents" @onchange="OnShowPastEventsChanged" />
+            Показать прошедшие события
+        </label>
     </div>
 }
 
 @if (isLoading)
 {
-    <p class="text-center">@Loc["AllEventsPage_Loading"].</p>
+    <p class="text-center">@Loc["AllEventsPage_Loading"]</p>
 }
 else if (events == null || !events.Any())
 {
-    <p class="text-center">@Loc["AllEventsPage_NoEvents"].</p>
+    <p class="text-center">@Loc["AllEventsPage_NoEvents"]</p>
 }
 else
 {
@@ -48,18 +71,17 @@ else
 
                         <p class="card-text"><strong>Категория:</strong> @ev.CategoryName</p>
                         <p class="card-text description-single-line">@ev.Description</p>
-
                         <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
                         <p class="card-text"><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
-
                         <p class="card-text"><strong>Место:</strong> @ev.Location</p>
                         <p class="card-text"><strong>Организатор:</strong> @ev.OrganizerName</p>
                         <div id="map-@ev.Id" class="map-container-allevent"></div>
-
                         <p class="card-text"><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
                         <p class="card-text"><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
 
-                        @if (ev.Phone is not null || ev.Email is not null || ev.Website is not null || ev.Telegram is not null || ev.Instagram is not null)
+                        @if (!string.IsNullOrWhiteSpace(ev.Phone) || !string.IsNullOrWhiteSpace(ev.Email)
+                            || !string.IsNullOrWhiteSpace(ev.Website) || !string.IsNullOrWhiteSpace(ev.Telegram)
+                            || !string.IsNullOrWhiteSpace(ev.Instagram))
                         {
                             <div class="mt-2">
                                 <strong>Контакты:</strong>
@@ -105,20 +127,22 @@ else
 
 @code {
     private List<EventDto>? events;
+    private List<EventDto>? allEvents;
+    private List<EventCategoryDto>? categories;
     private bool isLoading = true;
     private bool shouldRenderMaps = false;
     private bool isAdmin = false;
-    private List<EventDto>? allEvents;
-    private List<EventCategoryDto>? categories;
     private int? selectedCategoryId = null;
+    private DateTime? startDateFilter = null;
+    private DateTime? endDateFilter = null;
+    private string sortOrder = "asc";
+    private bool showPastEvents = false;
 
     protected override async Task OnInitializedAsync()
     {
         Loc.LanguageChanged += OnLanguageChanged;
-
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         isAdmin = authState.User.IsInRole("Gala");
-
         await LoadDataAsync();
     }
 
@@ -127,13 +151,11 @@ else
         isLoading = true;
         StateHasChanged();
 
-        var client = HttpClientFactory.CreateClient("AuthorizedClient");
-
         try
         {
+            var client = HttpClientFactory.CreateClient("AuthorizedClient");
             allEvents = await client.GetFromJsonAsync<List<EventDto>>($"api/events?culture={Loc.CurrentCulture}");
             events = allEvents;
-
             categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory");
         }
         catch (Exception ex)
@@ -151,40 +173,98 @@ else
 
     private void OnCategoryChanged(ChangeEventArgs e)
     {
-        var val = e.Value?.ToString();
-        if (int.TryParse(val, out int id))
-        {
-            selectedCategoryId = id;
-            events = allEvents?.Where(ev => ev.CategoryId == id).ToList();
-        }
+        selectedCategoryId = int.TryParse(e.Value?.ToString(), out var id) ? id : null;
+        FilterAndSortEvents();
+        shouldRenderMaps = true;
+    }
+
+    private void OnStartDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var date))
+            startDateFilter = date;
         else
+            startDateFilter = null;
+
+        FilterAndSortEvents();
+        shouldRenderMaps = true;
+    }
+
+    private void OnEndDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var date))
+            endDateFilter = date;
+        else
+            endDateFilter = null;
+
+        FilterAndSortEvents();
+        shouldRenderMaps = true;
+    }
+
+    private void OnSortOrderChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (val == "asc" || val == "desc")
+            sortOrder = val;
+        else
+            sortOrder = "asc";
+
+        FilterAndSortEvents();
+        shouldRenderMaps = true;
+    }
+
+    private void FilterAndSortEvents()
+    {
+        var query = allEvents?.AsEnumerable();
+
+        if (!showPastEvents)
         {
-            selectedCategoryId = null;
-            events = allEvents;
+            query = query?.Where(ev => !ev.EndTime.HasValue || ev.EndTime.Value.ToUniversalTime() >= DateTime.UtcNow);
         }
 
+        if (selectedCategoryId.HasValue)
+            query = query?.Where(ev => ev.CategoryId == selectedCategoryId);
+
+        if (startDateFilter.HasValue)
+            query = query?.Where(ev => ev.StartTime.Date >= startDateFilter.Value.Date);
+
+        if (endDateFilter.HasValue)
+            query = query?.Where(ev => ev.StartTime.Date <= endDateFilter.Value.Date);
+
+        query = sortOrder switch
+        {
+            "asc" => query?.OrderBy(ev => ev.StartTime),
+            "desc" => query?.OrderByDescending(ev => ev.StartTime),
+            _ => query
+        };
+
+        events = query?.ToList();
+
+        shouldRenderMaps = true;
+        StateHasChanged();
+    }
+
+    private void OnShowPastEventsChanged(ChangeEventArgs e)
+    {
+        showPastEvents = e.Value is bool b && b;
+        FilterAndSortEvents();
         shouldRenderMaps = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (shouldRenderMaps && events != null)
+        if (shouldRenderMaps && events is not null)
         {
             shouldRenderMaps = false;
-            await InvokeAsync(async () =>
+            foreach (var ev in events)
             {
-                foreach (var ev in events)
-                {
-                    await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
-                }
-            });
+                await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
+            }
         }
     }
 
     private async Task DeleteEvent(int id)
     {
-        if (!await JS.InvokeAsync<bool>("confirm", $"Удалить событие #{id}?"))
-            return;
+        if (!await JS.InvokeAsync<bool>("confirm", $"Удалить событие #{id}?")) return;
 
         try
         {
@@ -198,8 +278,7 @@ else
             }
             else
             {
-                var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ Ошибка удаления: {response.StatusCode} — {error}");
+                Console.WriteLine($"❌ Ошибка удаления: {response.StatusCode} — {await response.Content.ReadAsStringAsync()}");
             }
         }
         catch (Exception ex)
@@ -208,15 +287,8 @@ else
         }
     }
 
-    private void EditEvent(int id)
-    {
-        Nav.NavigateTo($"/edit-events/{id}");
-    }
-
-    private void ViewEvent(int id)
-    {
-        Nav.NavigateTo($"/events/{id}");
-    }
+    private void EditEvent(int id) => Nav.NavigateTo($"/edit-events/{id}");
+    private void ViewEvent(int id) => Nav.NavigateTo($"/events/{id}");
 
     private async Task OnLanguageChanged()
     {

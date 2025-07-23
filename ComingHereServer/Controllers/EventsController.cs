@@ -10,7 +10,6 @@ namespace ComingHereServer.Controllers
 {
     [ApiController]
     [Route("api/events")]
-    //[Route("api/[controller]")]
     public class EventsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -234,8 +233,10 @@ namespace ComingHereServer.Controllers
         [HttpGet("vip-random")]
         public async Task<IActionResult> GetRandomVipEvent([FromQuery] string culture = "uk")
         {
+            var now = DateTime.UtcNow;
+
             var vipEvents = await _context.Events
-                .Where(e => e.IsVip)
+                .Where(e => e.IsVip && e.StartTime > now)
                 .Include(e => e.Category)
                 .Include(e => e.Details)
                     .ThenInclude(d => d.ContactInfo)

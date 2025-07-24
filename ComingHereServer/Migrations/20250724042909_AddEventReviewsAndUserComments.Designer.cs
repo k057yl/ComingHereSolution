@@ -3,6 +3,7 @@ using System;
 using ComingHereServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ComingHereServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250724042909_AddEventReviewsAndUserComments")]
+    partial class AddEventReviewsAndUserComments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -380,9 +383,6 @@ namespace ComingHereServer.Migrations
                     b.Property<int>("EventId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ParentReviewId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("PhotoUrl")
                         .HasColumnType("text");
 
@@ -394,8 +394,6 @@ namespace ComingHereServer.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentReviewId");
 
                     b.HasIndex("UserId");
 
@@ -717,10 +715,6 @@ namespace ComingHereServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ComingHereShared.Entities.EventReview", "ParentReview")
-                        .WithMany("Replies")
-                        .HasForeignKey("ParentReviewId");
-
                     b.HasOne("ComingHereShared.Entities.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -728,8 +722,6 @@ namespace ComingHereServer.Migrations
                         .IsRequired();
 
                     b.Navigation("Event");
-
-                    b.Navigation("ParentReview");
 
                     b.Navigation("User");
                 });
@@ -832,11 +824,6 @@ namespace ComingHereServer.Migrations
             modelBuilder.Entity("ComingHereShared.Entities.EventOrganizer", b =>
                 {
                     b.Navigation("Events");
-                });
-
-            modelBuilder.Entity("ComingHereShared.Entities.EventReview", b =>
-                {
-                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("ComingHereShared.Entities.OrganizerCategory", b =>

@@ -33,6 +33,7 @@ namespace ComingHereShared.DTO.EventDtos
         public string? Instagram { get; set; }
 
         public List<EventPhotoDto> Photos { get; set; } = new();
+        public List<EventReviewDto> Reviews { get; set; } = new();//********
 
         public static EventDto FromEntity(Event ev, string culture)
         {

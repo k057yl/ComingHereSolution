@@ -1,6 +1,6 @@
 ﻿@page "/events/{id:int}"
-@using ComingHereShared.DTO
 @using ComingHereShared.DTO.EventDtos
+@using ComingHereShared.Entities
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
 @inject NavigationManager Nav
@@ -38,16 +38,79 @@ else
                 }
             </div>
         </div>
+
+        @* Форма отзыва *@
+        @if (!reviewSuccess)
+        {
+            <div class="card mt-4">
+                <div class="card-header">Оставить отзыв</div>
+                <div class="card-body">
+                    @if (submitError != null)
+                    {
+                        <div class="alert alert-danger">@submitError</div>
+                    }
+
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Рейтинг (1-5):</label>
+                        <input type="number" id="rating" class="form-control" min="1" max="5" @bind="reviewInput.Rating" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Комментарий:</label>
+                        <textarea id="comment" class="form-control" rows="3" @bind="reviewInput.Comment"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="photourl" class="form-label">Ссылка на фото события (если есть):</label>
+                        <input type="url" id="photourl" class="form-control" @bind="reviewInput.PhotoUrl" />
+                    </div>
+
+                    <button class="btn btn-primary" @onclick="SubmitReview" disabled="@isSubmitting">
+                        @(isSubmitting ? "Отправка..." : "Отправить отзыв")
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-success mt-4">Спасибо за отзыв!</div>
+        }
+
+        @* Список отзывов с ответами (каскад) *@
+        @if (ev.Reviews != null && ev.Reviews.Count > 0)
+        {
+            <div class="card mt-4">
+                <div class="card-header">Отзывы (@ev.Reviews.Count)</div>
+                <div class="card-body review-container">
+                    @foreach (var review in reviews.Where(r => r.ParentReviewId == null))
+                    {
+                        <ReviewWithReplies Review="review"
+                                           Replies="review.Replies"
+                                           OnReply="HandleReply" />
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="mt-4 text-muted">Отзывов пока нет.</p>
+        }
     </div>
 }
 
 @code {
-    [Parameter]
-    public int id { get; set; }
+    [Parameter] public int id { get; set; }
 
     private EventDto? ev;
     private bool isLoading = true;
     private bool shouldRenderMap = false;
+
+    private EventReviewInput reviewInput = new();
+    private bool isSubmitting = false;
+    private string? submitError;
+    private bool reviewSuccess = false;
+
+    private List<EventReviewDtoWithReplies> reviews = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -55,6 +118,10 @@ else
         try
         {
             ev = await client.GetFromJsonAsync<EventDto>($"api/events/{id}");
+            reviews = await client.GetFromJsonAsync<List<EventReviewDtoWithReplies>>($"api/eventreview/{id}");
+
+            if (ev != null)
+                ev.Reviews = reviews.Cast<EventReviewDto>().ToList();
         }
         catch (Exception ex)
         {
@@ -76,8 +143,86 @@ else
         }
     }
 
-    private void GoBack()
+    private void GoBack() => Nav.NavigateTo("/allevents");
+
+    private async Task SubmitReview()
     {
-        Nav.NavigateTo("/allevents");
+        submitError = null;
+        reviewSuccess = false;
+
+        if (reviewInput.Rating < 1 || reviewInput.Rating > 5)
+        {
+            submitError = "Рейтинг должен быть от 1 до 5.";
+            return;
+        }
+
+        isSubmitting = true;
+
+        var client = HttpClientFactory.CreateClient("AuthorizedClient");
+
+        try
+        {
+            var dto = new EventReviewCreateDto
+            {
+                EventId = id,
+                Rating = reviewInput.Rating,
+                Comment = reviewInput.Comment,
+                PhotoUrl = reviewInput.PhotoUrl,
+                ParentReviewId = null
+            };
+
+            var response = await client.PostAsJsonAsync("api/eventreview", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                reviewSuccess = true;
+                reviewInput = new EventReviewInput();
+                reviews = await client.GetFromJsonAsync<List<EventReviewDtoWithReplies>>($"api/eventreview/{id}");
+                if (ev != null)
+                    ev.Reviews = reviews.Cast<EventReviewDto>().ToList();
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                submitError = $"Ошибка: {msg}";
+            }
+        }
+        catch (Exception ex)
+        {
+            submitError = $"Ошибка: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task HandleReply((int parentId, string replyText) data)
+    {
+        var (parentReviewId, replyText) = data;
+
+        var client = HttpClientFactory.CreateClient("AuthorizedClient");
+
+        var dto = new EventReviewCreateDto
+        {
+            EventId = id,
+            Rating = 0,
+            Comment = replyText,
+            ParentReviewId = parentReviewId
+        };
+
+        var response = await client.PostAsJsonAsync("api/eventreview", dto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            reviews = await client.GetFromJsonAsync<List<EventReviewDtoWithReplies>>($"api/eventreview/{id}");
+            if (ev != null)
+                ev.Reviews = reviews.Cast<EventReviewDto>().ToList();
+            StateHasChanged();
+        }
+        else
+        {
+            // можно добавить обработку ошибок
+        }
     }
 }

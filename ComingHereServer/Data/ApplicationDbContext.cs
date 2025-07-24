@@ -1,4 +1,5 @@
-﻿using ComingHereShared.Entities;
+﻿using ComingHereShared.DTO.EventDtos;
+using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,8 @@ namespace ComingHereServer.Data
         public DbSet<ParticipantCategory> ParticipantCategories { get; set; }
         public DbSet<EventDetails> EventDetails { get; set; }
         public DbSet<EventContactInfo> EventContactInfos { get; set; }
-
+        public DbSet<EventReview> EventReviews { get; set; }
+        public DbSet<UserComment> UserComments { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -78,6 +80,37 @@ namespace ComingHereServer.Data
                 .WithOne(ci => ci.EventDetails)
                 .HasForeignKey<EventDetails>(d => d.ContactInfoId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Связь: Event -> EventReview
+            builder.Entity<EventReview>()
+                .HasOne(r => r.Event)
+                .WithMany(e => e.Reviews)
+                .HasForeignKey(r => r.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<EventReview>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Один отзыв на событие от одного пользователя
+            builder.Entity<EventReview>()
+                .HasIndex(r => new { r.EventId, r.UserId })
+                .IsUnique();
+
+            // UserComment: связь с автором и целью
+            builder.Entity<UserComment>()
+                .HasOne(c => c.TargetUser)
+                .WithMany()
+                .HasForeignKey(c => c.TargetUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UserComment>()
+                .HasOne(c => c.Author)
+                .WithMany()
+                .HasForeignKey(c => c.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // JSON-конвертер для LocalizedString
             var options = new JsonSerializerOptions();

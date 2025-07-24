@@ -1,5 +1,6 @@
 ﻿@using ComingHereShared.Constants
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
@@ -56,6 +57,11 @@
                 <span class="bi bi-list-ul" aria-hidden="true"></span> Все события
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+            <a class="nav-link" href="" @onclick="GoToMyCabinet">
+                <span class="bi bi-star-half" aria-hidden="true"></span> Мой кабинет
+            </a>
+        </div>
     </nav>
 </div>
 
@@ -87,6 +93,22 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task GoToMyCabinet()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst("sub")?.Value ?? user.FindFirst("id")?.Value;
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                Navigation.NavigateTo($"/user/{userId}");
+            }
+        }
     }
 
     public void Dispose()

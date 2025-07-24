@@ -1,0 +1,35 @@
+﻿@page "/user/{UserId}"
+@using ComingHereShared.DTO.CommentDtos
+@using ComingHereShared.DTO.UserDtos
+@inject HttpClient Http
+
+<h3>@UserName (@Rank)</h3>
+<p>Репутация: @Reputation</p>
+
+<h4>Комментарии:</h4>
+@if (Comments is not null)
+{
+    foreach (var c in Comments)
+    {
+        <p><b>@c.Author</b>: @c.Text</p>
+    }
+}
+
+@code {
+    [Parameter] public string UserId { get; set; }
+
+    private string UserName;
+    private int Reputation;
+    private string Rank;
+    private List<CommentDto> Comments = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await Http.GetFromJsonAsync<UserProfileDto>($"api/user/{UserId}");
+
+        UserName = data.UserName;
+        Reputation = data.Reputation;
+        Rank = data.Rank;
+        Comments = data.Comments;
+    }
+}

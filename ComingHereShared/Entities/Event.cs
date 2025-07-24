@@ -1,4 +1,6 @@
-﻿namespace ComingHereShared.Entities
+﻿using ComingHereShared.DTO.EventDtos;
+
+namespace ComingHereShared.Entities
 {
     public class Event
     {
@@ -48,5 +50,7 @@
         public ICollection<EventAttendee> Attendees { get; set; } = new List<EventAttendee>();
 
         public bool IsVip { get; set; } = false;
+
+        public ICollection<EventReview> Reviews { get; set; } = new List<EventReview>();
     }
 }

@@ -12,7 +12,6 @@
         showReplyForm = !showReplyForm;
         if (showReplyForm)
         {
-            // вставляем ник в начало, если его там нет
             if (string.IsNullOrWhiteSpace(replyText) || !replyText.StartsWith($"@{Review.AuthorName}"))
             {
                 replyText = $"@{Review.AuthorName}, ";
@@ -33,7 +32,35 @@
     }
 }
 
-<div class="mb-3 border-left ps-3" style="border-color: #ccc; border-width: 3px;">
+<style>
+    .review-container {
+        border-left: 3px solid #ccc;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .reply-nested {
+        margin-left: 2rem;
+        border-left: 2px dashed #aaa;
+        padding-left: 1rem;
+    }
+
+    .review-img {
+        max-width: 200px;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
+
+    .reply-button {
+        margin-top: 0.5rem;
+    }
+
+    .reply-form textarea {
+        resize: vertical;
+    }
+</style>
+
+<div class="review-container">
     <strong>@Review.AuthorName</strong> — @Review.CreatedAt.ToLocalTime().ToString("g")<br />
     @if (Review.Rating > 0)
     {
@@ -45,16 +72,16 @@
 
     @if (!string.IsNullOrEmpty(Review.PhotoUrl))
     {
-        <img src="@Review.PhotoUrl" alt="Фото к отзыву" style="max-width: 200px; border-radius: 4px;" />
+        <img src="@Review.PhotoUrl" alt="Фото к отзыву" class="review-img" />
     }
 
-    <button class="btn btn-sm btn-link" @onclick="TriggerReply">
+    <button class="btn btn-sm btn-link reply-button" @onclick="TriggerReply">
         @(showReplyForm ? "Отмена" : "Ответить")
     </button>
 
     @if (showReplyForm)
     {
-        <div class="mt-2">
+        <div class="reply-form mt-2">
             <textarea class="form-control mb-2" @bind="replyText" rows="2"></textarea>
             <button class="btn btn-primary btn-sm" @onclick="SubmitReply">Отправить ответ</button>
         </div>
@@ -62,7 +89,7 @@
 
     @if (Replies != null && Replies.Count > 0)
     {
-        <div class="mt-3 ms-4">
+        <div class="reply-nested">
             @foreach (var reply in Replies)
             {
                 <ReviewWithReplies Review="reply"

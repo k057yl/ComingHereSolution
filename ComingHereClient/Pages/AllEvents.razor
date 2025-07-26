@@ -12,39 +12,13 @@
 
 @if (categories != null && categories.Any())
 {
-    <div class="mb-3 text-center">
-        <label>@Loc["AllEventsPage_Filter"]</label>
-
-        <select @onchange="OnCategoryChanged" class="form-select w-auto d-inline-block ms-2">
-            <option value="">@Loc["AllEventsPage_AllCategory"]</option>
-            @foreach (var category in categories)
-            {
-                <option value="@category.Id" selected="@(selectedCategoryId == category.Id)">
-                    @category.Name
-                </option>
-            }
-        </select>
-
-        <input type="date" 
-               value="@(startDateFilter?.ToString("yyyy-MM-dd") ?? "")" 
-               @onchange="OnStartDateChanged" 
-               class="form-control d-inline-block w-auto ms-2" />
-
-        <input type="date" 
-               value="@(endDateFilter?.ToString("yyyy-MM-dd") ?? "")" 
-               @onchange="OnEndDateChanged" 
-               class="form-control d-inline-block w-auto ms-2" />
-
-        <select value="@sortOrder" @onchange="OnSortOrderChanged" class="form-select w-auto d-inline-block ms-2">
-            <option value="asc" selected="@(sortOrder == "asc")">Сначала ближние</option>
-            <option value="desc" selected="@(sortOrder == "desc")">Сначала дальние</option>
-        </select>
-
-        <label class="ms-3">
-            <input type="checkbox" checked="@showPastEvents" @onchange="OnShowPastEventsChanged" />
-            Показать прошедшие события
-        </label>
-    </div>
+    <EventFilters Categories="categories"
+                  SelectedCategoryId="@selectedCategoryId" SelectedCategoryIdChanged="OnSelectedCategoryChanged"
+                  StartDateFilter="@startDateFilter" StartDateFilterChanged="OnStartDateFilterChanged"
+                  EndDateFilter="@endDateFilter" EndDateFilterChanged="OnEndDateFilterChanged"
+                  SortOrder="@sortOrder" SortOrderChanged="OnSortOrderChanged"
+                  SelectedFilter="@selectedFilter" SelectedFilterChanged="OnSelectedFilterChanged"
+                  OnFilterChanged="ApplyFilters" />
 }
 
 @if (isLoading)
@@ -61,65 +35,10 @@ else
         @foreach (var ev in events)
         {
             <div class="col">
-                <div class="card h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="event-title">@ev.Name</h5>
-                        @if (ev.Photos?.Count > 0)
-                        {
-                            <img src="@ev.Photos[0].PhotoUrl" alt="Фото" class="img-container-allevent" />
-                        }
-
-                        <p class="card-text"><strong>Категория:</strong> @ev.CategoryName</p>
-                        <p class="card-text description-single-line">@ev.Description</p>
-                        <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
-                        <p class="card-text"><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
-                        <p class="card-text"><strong>Место:</strong> @ev.Location</p>
-                        <p class="card-text"><strong>Организатор:</strong> @ev.OrganizerName</p>
-                        <div id="map-@ev.Id" class="map-container-allevent"></div>
-                        <p class="card-text"><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
-                        <p class="card-text"><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
-
-                        @if (!string.IsNullOrWhiteSpace(ev.Phone) || !string.IsNullOrWhiteSpace(ev.Email)
-                            || !string.IsNullOrWhiteSpace(ev.Website) || !string.IsNullOrWhiteSpace(ev.Telegram)
-                            || !string.IsNullOrWhiteSpace(ev.Instagram))
-                        {
-                            <div class="mt-2">
-                                <strong>Контакты:</strong>
-                                <ul class="list-unstyled mb-0 ms-2">
-                                    @if (!string.IsNullOrWhiteSpace(ev.Phone))
-                                    {
-                                        <li>📞 @ev.Phone</li>
-                                    }
-                                    @if (!string.IsNullOrWhiteSpace(ev.Email))
-                                    {
-                                        <li>✉️ @ev.Email</li>
-                                    }
-                                    @if (!string.IsNullOrWhiteSpace(ev.Website))
-                                    {
-                                        <li>🌐 <a href="@ev.Website" target="_blank">@ev.Website</a></li>
-                                    }
-                                    @if (!string.IsNullOrWhiteSpace(ev.Telegram))
-                                    {
-                                        <li>📲 Telegram: <a href="https://t.me/@(ev.Telegram.TrimStart('@'))" target="_blank">@ev.Telegram</a></li>
-                                    }
-                                    @if (!string.IsNullOrWhiteSpace(ev.Instagram))
-                                    {
-                                        <li>📷 Instagram: <a href="https://instagram.com/@(ev.Instagram.TrimStart('@'))" target="_blank">@ev.Instagram</a></li>
-                                    }
-                                </ul>
-                            </div>
-                        }
-
-                        <div class="mt-auto d-flex justify-content-between">
-                            <button class="btn btn-sm btn-primary" @onclick="() => ViewEvent(ev.Id)">👁️</button>
-                            @if (isAdmin)
-                            {
-                                <button class="btn btn-sm btn-secondary" @onclick="() => EditEvent(ev.Id)">✏️</button>
-                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(ev.Id)">🗑️</button>
-                            }
-                        </div>
-                    </div>
-                </div>
+                <EventCard Event="ev" IsAdmin="isAdmin"
+                           OnView="@ViewEvent"
+                           OnEdit="@EditEvent"
+                           OnDelete="@DeleteEvent" />
             </div>
         }
     </div>
@@ -130,19 +49,21 @@ else
     private List<EventDto>? allEvents;
     private List<EventCategoryDto>? categories;
     private bool isLoading = true;
-    private bool shouldRenderMaps = false;
     private bool isAdmin = false;
+
     private int? selectedCategoryId = null;
     private DateTime? startDateFilter = null;
     private DateTime? endDateFilter = null;
     private string sortOrder = "asc";
-    private bool showPastEvents = false;
+    private string selectedFilter = "upcoming";
 
     protected override async Task OnInitializedAsync()
     {
         Loc.LanguageChanged += OnLanguageChanged;
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         isAdmin = authState.User.IsInRole("Gala");
+
         await LoadDataAsync();
     }
 
@@ -155,8 +76,8 @@ else
         {
             var client = HttpClientFactory.CreateClient("AuthorizedClient");
             allEvents = await client.GetFromJsonAsync<List<EventDto>>($"api/events?culture={Loc.CurrentCulture}");
-            events = allEvents;
             categories = await client.GetFromJsonAsync<List<EventCategoryDto>>("api/eventcategory");
+            ApplyFilters();
         }
         catch (Exception ex)
         {
@@ -167,104 +88,95 @@ else
         }
 
         isLoading = false;
-        shouldRenderMaps = true;
         StateHasChanged();
     }
 
-    private void OnCategoryChanged(ChangeEventArgs e)
+    private void ApplyFilters()
     {
-        selectedCategoryId = int.TryParse(e.Value?.ToString(), out var id) ? id : null;
-        FilterAndSortEvents();
-        shouldRenderMaps = true;
-    }
-
-    private void OnStartDateChanged(ChangeEventArgs e)
-    {
-        if (DateTime.TryParse(e.Value?.ToString(), out var date))
-            startDateFilter = date;
-        else
-            startDateFilter = null;
-
-        FilterAndSortEvents();
-        shouldRenderMaps = true;
-    }
-
-    private void OnEndDateChanged(ChangeEventArgs e)
-    {
-        if (DateTime.TryParse(e.Value?.ToString(), out var date))
-            endDateFilter = date;
-        else
-            endDateFilter = null;
-
-        FilterAndSortEvents();
-        shouldRenderMaps = true;
-    }
-
-    private void OnSortOrderChanged(ChangeEventArgs e)
-    {
-        var val = e.Value?.ToString();
-        if (val == "asc" || val == "desc")
-            sortOrder = val;
-        else
-            sortOrder = "asc";
-
-        FilterAndSortEvents();
-        shouldRenderMaps = true;
-    }
-
-    private void FilterAndSortEvents()
-    {
-        var query = allEvents?.AsEnumerable();
-
-        if (!showPastEvents)
+        if (allEvents == null)
         {
-            query = query?.Where(ev => !ev.EndTime.HasValue || ev.EndTime.Value.ToUniversalTime() >= DateTime.UtcNow);
+            events = null;
+            return;
         }
 
-        if (selectedCategoryId.HasValue)
-            query = query?.Where(ev => ev.CategoryId == selectedCategoryId);
+        var query = allEvents.AsEnumerable();
 
-        if (startDateFilter.HasValue)
-            query = query?.Where(ev => ev.StartTime.Date >= startDateFilter.Value.Date);
-
-        if (endDateFilter.HasValue)
-            query = query?.Where(ev => ev.StartTime.Date <= endDateFilter.Value.Date);
-
-        query = sortOrder switch
+        query = selectedFilter switch
         {
-            "asc" => query?.OrderBy(ev => ev.StartTime),
-            "desc" => query?.OrderByDescending(ev => ev.StartTime),
+            "past" => query.Where(ev => ev.EndTime.HasValue && ev.EndTime.Value.ToUniversalTime() < DateTime.UtcNow),
+            "upcoming" => query.Where(ev => !ev.EndTime.HasValue || ev.EndTime.Value.ToUniversalTime() >= DateTime.UtcNow),
             _ => query
         };
 
-        events = query?.ToList();
+        if (selectedCategoryId.HasValue)
+            query = query.Where(ev => ev.CategoryId == selectedCategoryId);
 
-        shouldRenderMaps = true;
+        if (startDateFilter.HasValue)
+            query = query.Where(ev => ev.StartTime.Date >= startDateFilter.Value.Date);
+
+        if (endDateFilter.HasValue)
+            query = query.Where(ev => ev.StartTime.Date <= endDateFilter.Value.Date);
+
+        events = sortOrder switch
+        {
+            "asc" => query.OrderBy(ev => ev.StartTime).ToList(),
+            "desc" => query.OrderByDescending(ev => ev.StartTime).ToList(),
+            _ => query.ToList()
+        };
+
         StateHasChanged();
     }
 
-    private void OnShowPastEventsChanged(ChangeEventArgs e)
+    private Task OnSelectedCategoryChanged(int? val)
     {
-        showPastEvents = e.Value is bool b && b;
-        FilterAndSortEvents();
-        shouldRenderMaps = true;
+        selectedCategoryId = val;
+        return Task.CompletedTask;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private Task OnStartDateFilterChanged(DateTime? val)
     {
-        if (shouldRenderMaps && events is not null)
-        {
-            shouldRenderMaps = false;
-            foreach (var ev in events)
-            {
-                await JS.InvokeVoidAsync("renderStaticMap", $"map-{ev.Id}", ev.Latitude, ev.Longitude);
-            }
-        }
+        startDateFilter = val;
+        return Task.CompletedTask;
+    }
+
+    private Task OnEndDateFilterChanged(DateTime? val)
+    {
+        endDateFilter = val;
+        return Task.CompletedTask;
+    }
+
+    private Task OnSortOrderChanged(string val)
+    {
+        sortOrder = val;
+        return Task.CompletedTask;
+    }
+
+    private Task OnSelectedFilterChanged(string val)
+    {
+        selectedFilter = val;
+        return Task.CompletedTask;
+    }
+
+    private async Task OnLanguageChanged()
+    {
+        await LoadDataAsync();
+        StateHasChanged();
+    }
+
+    private void ViewEvent(int id)
+    {
+        Nav.NavigateTo($"/events/{id}");
+    }
+
+    private void EditEvent(int id)
+    {
+        Nav.NavigateTo($"/edit-events/{id}");
     }
 
     private async Task DeleteEvent(int id)
     {
-        if (!await JS.InvokeAsync<bool>("confirm", $"Удалить событие #{id}?")) return;
+        if (!await JS.InvokeAsync<bool>("confirm", $"Удалить событие #{id}?"))
+            return;
 
         try
         {
@@ -278,26 +190,15 @@ else
             }
             else
             {
-                Console.WriteLine($"❌ Ошибка удаления: {response.StatusCode} — {await response.Content.ReadAsStringAsync()}");
+                var content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Ошибка удаления: {response.StatusCode} - {content}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"💥 Исключение при удалении: {ex.Message}");
+            Console.WriteLine($"Исключение при удалении: {ex.Message}");
         }
     }
 
-    private void EditEvent(int id) => Nav.NavigateTo($"/edit-events/{id}");
-    private void ViewEvent(int id) => Nav.NavigateTo($"/events/{id}");
-
-    private async Task OnLanguageChanged()
-    {
-        await LoadDataAsync();
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        Loc.LanguageChanged -= OnLanguageChanged;
-    }
+    public void Dispose() => Loc.LanguageChanged -= OnLanguageChanged;
 }

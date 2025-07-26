@@ -17,5 +17,10 @@
   "AllEventsPage_Filter": "Фільтр по категоріях:",
   "AllEventsPage_AllCategory": "--Всі категорії--",
   "AllEventsPage_Loading": "Завантаження...",
-  "AllEventsPage_NoEvents": "Подій не знайдено"
+  "AllEventsPage_NoEvents": "Подій не знайдено",
+  "FilterEventsPage_ShowAll": "Усі події",
+  "FilterEventsPage_ShowPast": "Минулі події",
+  "FilterEventsPage_ShowUpcoming": "Майбутні події",
+  "FilterEventsPage_Ascending": "Від старих до нових",
+  "FilterEventsPage_Descending": "Від нових до старих"
 }

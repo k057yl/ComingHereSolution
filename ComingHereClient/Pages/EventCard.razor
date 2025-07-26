@@ -1,0 +1,85 @@
+﻿@using ComingHereClient.Services
+@using ComingHereShared.DTO.EventDtos
+@inject LocalizationService Loc
+
+<div class="card h-100">
+    <div class="card-body d-flex flex-column">
+        <h5 class="event-title">@Event.Name</h5>
+
+        @if (Event.Photos?.Count > 0)
+        {
+            <img src="@Event.Photos[0].PhotoUrl" alt="Фото" class="img-container-allevent" />
+        }
+
+        <p class="card-text"><strong>@Loc["Category"]:</strong> @Event.CategoryName</p>
+        <p class="card-text description-single-line">@Event.Description</p>
+        <p class="card-text"><strong>@Loc["Start"]:</strong> @Event.StartTime.ToUniversalTime().ToString("yyyy-MM-dd HH:mm") UTC</p>
+        <p class="card-text"><strong>@Loc["End"]:</strong> @(Event.EndTime?.ToUniversalTime().ToString("yyyy-MM-dd HH:mm") + " UTC" ?? "-")</p>
+        <p class="card-text"><strong>@Loc["Location"]:</strong> @Event.Location</p>
+        <p class="card-text"><strong>@Loc["Organizer"]:</strong> @Event.OrganizerName</p>
+        <div id="map-@Event.Id" class="map-container-allevent"></div>
+        <p class="card-text"><strong>@Loc["Price"]:</strong> @(Event.Price != null ? $"{Event.Price} Грн" : "-")</p>
+        <p class="card-text"><strong>@Loc["MaxAttendees"]:</strong> @(Event.MaxAttendees?.ToString() ?? "-")</p>
+
+        @if (!string.IsNullOrWhiteSpace(Event.Phone) || !string.IsNullOrWhiteSpace(Event.Email)
+                || !string.IsNullOrWhiteSpace(Event.Website) || !string.IsNullOrWhiteSpace(Event.Telegram)
+                || !string.IsNullOrWhiteSpace(Event.Instagram))
+        {
+            <div class="mt-2">
+                <strong>@Loc["Contacts"]:</strong>
+                <ul class="list-unstyled mb-0 ms-2">
+                    @if (!string.IsNullOrWhiteSpace(Event.Phone))
+                    {
+                        <li>📞 @Event.Phone</li>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Event.Email))
+                    {
+                        <li>✉️ @Event.Email</li>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Event.Website))
+                    {
+                        <li>🌐 <a href="@Event.Website" target="_blank" rel="noopener">@Event.Website</a></li>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Event.Telegram))
+                    {
+                        <li>📲 Telegram: <a href="https://t.me/@(Event.Telegram.TrimStart('@'))" target="_blank" rel="noopener">@Event.Telegram</a></li>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Event.Instagram))
+                    {
+                        <li>📷 Instagram: <a href="https://instagram.com/@(Event.Instagram.TrimStart('@'))" target="_blank" rel="noopener">@Event.Instagram</a></li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="mt-auto d-flex justify-content-between">
+            <button class="btn btn-sm btn-primary" @onclick="() => OnView.InvokeAsync(Event.Id)">👁️</button>
+            @if (IsAdmin)
+            {
+                <button class="btn btn-sm btn-secondary" @onclick="() => OnEdit.InvokeAsync(Event.Id)">✏️</button>
+                <button class="btn btn-sm btn-danger" @onclick="() => OnDelete.InvokeAsync(Event.Id)">🗑️</button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventDto Event { get; set; } = null!;
+    [Parameter] public bool IsAdmin { get; set; }
+    [Parameter] public EventCallback<int> OnView { get; set; }
+    [Parameter] public EventCallback<int> OnEdit { get; set; }
+    [Parameter] public EventCallback<int> OnDelete { get; set; }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private int? lastRenderedEventId = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (lastRenderedEventId != Event.Id)
+        {
+            lastRenderedEventId = Event.Id;
+            await JS.InvokeVoidAsync("renderStaticMap", $"map-{Event.Id}", Event.Latitude, Event.Longitude);
+        }
+    }
+}

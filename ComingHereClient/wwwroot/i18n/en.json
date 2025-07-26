@@ -17,5 +17,10 @@
   "AllEventsPage_Filter": "Filter by category:",
   "AllEventsPage_AllCategory": "--All categories--",
   "AllEventsPage_Loading": "Loading...",
-  "AllEventsPage_NoEvents": "No events found."
+  "AllEventsPage_NoEvents": "No events found.",
+  "FilterEventsPage_ShowAll": "All events",
+  "FilterEventsPage_ShowPast": "Past",
+  "FilterEventsPage_ShowUpcoming": "Upcoming",
+  "FilterEventsPage_Ascending": "Sort ascending",
+  "FilterEventsPage_Descending": "Sort descending"
 }

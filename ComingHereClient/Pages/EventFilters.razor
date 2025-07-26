@@ -1,0 +1,118 @@
+﻿@inject LocalizationService Loc
+@using ComingHereClient.Services
+@using ComingHereShared.DTO.EventDtos
+
+<div class="mb-3 text-center">
+    <label>@Loc["AllEventsPage_Filter"]</label>
+
+    <select class="form-select w-auto d-inline-block ms-2" value="@SelectedCategoryIdString" @onchange="OnCategoryChanged">
+        <option value="">@Loc["AllEventsPage_AllCategory"]</option>
+        @foreach (var category in Categories)
+        {
+            <option value="@category.Id">@category.Name</option>
+        }
+    </select>
+
+    <input type="date" class="form-control d-inline-block w-auto ms-2"
+           value="@StartDateFilterString"
+           @onchange="OnStartDateChanged"
+           placeholder="@Loc["StartDate"]" />
+
+    <input type="date" class="form-control d-inline-block w-auto ms-2"
+           value="@EndDateFilterString"
+           @onchange="OnEndDateChanged"
+           placeholder="@Loc["EndDate"]" />
+
+    <select class="form-select w-auto d-inline-block ms-2" value="@SortOrder" @onchange="OnSortOrderChanged">
+        <option value="asc">@Loc["FilterEventsPage_Ascending"]</option>
+        <option value="desc">@Loc["FilterEventsPage_Descending"]</option>
+    </select>
+
+    @foreach (var filter in Filters)
+    {
+        <div class="form-check form-check-inline ms-3">
+            <input class="form-check-input" type="radio"
+                   id="@($"filter-{filter.Key}")"
+                   name="eventFilter"
+                   value="@filter.Key"
+                   checked="@(SelectedFilter == filter.Key)"
+                   @onchange="() => OnSelectedFilterChanged(filter.Key)" />
+            <label class="form-check-label" for="@($"filter-{filter.Key}")">@filter.Value</label>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<EventCategoryDto> Categories { get; set; } = new();
+
+    [Parameter] public int? SelectedCategoryId { get; set; }
+    [Parameter] public DateTime? StartDateFilter { get; set; }
+    [Parameter] public DateTime? EndDateFilter { get; set; }
+    [Parameter] public string SortOrder { get; set; } = "asc";
+    [Parameter] public string SelectedFilter { get; set; } = "upcoming";
+
+    [Parameter] public EventCallback OnFilterChanged { get; set; }
+    [Parameter] public EventCallback<int?> SelectedCategoryIdChanged { get; set; }
+    [Parameter] public EventCallback<DateTime?> StartDateFilterChanged { get; set; }
+    [Parameter] public EventCallback<DateTime?> EndDateFilterChanged { get; set; }
+    [Parameter] public EventCallback<string> SortOrderChanged { get; set; }
+    [Parameter] public EventCallback<string> SelectedFilterChanged { get; set; }
+
+    private Dictionary<string, string> Filters => new()
+    {
+        { "upcoming", Loc["FilterEventsPage_ShowUpcoming"]},
+        { "past", Loc["FilterEventsPage_ShowPast"]},
+        { "all", Loc["FilterEventsPage_ShowAll"]}
+    };
+
+    private string SelectedCategoryIdString => SelectedCategoryId?.ToString() ?? "";
+    private string StartDateFilterString => StartDateFilter?.ToString("yyyy-MM-dd") ?? "";
+    private string EndDateFilterString => EndDateFilter?.ToString("yyyy-MM-dd") ?? "";
+
+    private async Task OnCategoryChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+            await SelectedCategoryIdChanged.InvokeAsync(id);
+        else
+            await SelectedCategoryIdChanged.InvokeAsync(null);
+
+        await OnFilterChanged.InvokeAsync();
+    }
+
+    private async Task OnStartDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var d))
+            await StartDateFilterChanged.InvokeAsync(d);
+        else
+            await StartDateFilterChanged.InvokeAsync(null);
+
+        await OnFilterChanged.InvokeAsync();
+    }
+
+    private async Task OnEndDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var d))
+            await EndDateFilterChanged.InvokeAsync(d);
+        else
+            await EndDateFilterChanged.InvokeAsync(null);
+
+        await OnFilterChanged.InvokeAsync();
+    }
+
+    private async Task OnSortOrderChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (val == "asc" || val == "desc")
+            await SortOrderChanged.InvokeAsync(val);
+        else
+            await SortOrderChanged.InvokeAsync("asc");
+
+        await OnFilterChanged.InvokeAsync();
+    }
+
+    private async Task OnSelectedFilterChanged(string key)
+    {
+        await SelectedFilterChanged.InvokeAsync(key);
+        await OnFilterChanged.InvokeAsync();
+    }
+}

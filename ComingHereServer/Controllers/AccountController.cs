@@ -12,7 +12,7 @@ namespace ComingHereServer.Controllers
 {
     [ApiController]
     [Route("api/account")]
-    //[Route("api/[controller]")]
+
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -132,6 +132,39 @@ namespace ComingHereServer.Controllers
         {
             var users = _userManager.Users.Select(u => new { u.Id, u.UserName, u.Email }).ToList();
             return Ok(users);
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] EmailOnlyDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null) return Ok();
+
+            var code = _codeGenerator.GenerateCode();
+            _memoryCache.Set($"ResetCode_{user.Email}", code, TimeSpan.FromMinutes(15));
+            await _emailService.SendResetCodeAsync(user.Email, code);
+
+            return Ok();
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null) return BadRequest("User not found");
+
+            if (!_memoryCache.TryGetValue($"ResetCode_{user.Email}", out string expectedCode))
+                return BadRequest("Code expired");
+
+            if (dto.Code != expectedCode)
+                return BadRequest("Wrong code");
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
+            if (!result.Succeeded) return BadRequest(result.Errors);
+
+            _memoryCache.Remove($"ResetCode_{user.Email}");
+            return Ok();
         }
     }
 }

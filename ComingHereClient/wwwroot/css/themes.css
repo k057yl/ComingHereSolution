@@ -13,6 +13,12 @@
     --background-home-map-container: #e8e7e7;
     --general-map-overlay-color: transparent;
     --background-home-map-legend: #dbe1dd;
+    /*VipContainer*/
+    --wrapper-vip-container-bg-color: #42659a;
+    --vip-container-bg-color: #f0f0f0;
+    --vip-container-text-color: #262626;
+    /*MainPanels*/
+    --main-panel-text-color: #f0f0f0;
 }
 
 [data-theme='dark'] {
@@ -30,4 +36,10 @@
     --background-home-map-container: #9c9a9a;
     --general-map-overlay-color: rgba(50, 50, 50, 0.3);
     --background-home-map-legend: #828181;
+    /*VipContainer*/
+    --wrapper-vip-container-bg-color: #0b2c5f;
+    --vip-container-bg-color: #262626;
+    --vip-container-text-color: #f0f0f0;
+    /*MainPanels*/
+    --main-panel-text-color: #cceeff;
 }

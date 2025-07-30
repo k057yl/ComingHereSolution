@@ -22,5 +22,17 @@
   "FilterEventsPage_ShowPast": "Минулі події",
   "FilterEventsPage_ShowUpcoming": "Майбутні події",
   "FilterEventsPage_Ascending": "Від старих до нових",
-  "FilterEventsPage_Descending": "Від нових до старих"
+  "FilterEventsPage_Descending": "Від нових до старих",
+  "FilterEventsPage_ResetFilters": "Скинути усі фільтри",
+  "LeftPanel_Button_Home": "Головна",
+  "LeftPanel_Button_CreateEvent": "Створити подію",
+  "LeftPanel_Button_EventCategory": "Категорії подій",
+  "LeftPanel_Button_OrganizerCategories": "Категорії організаторів",
+  "LeftPanel_Button_AttendeeCategories": "Категорії участників",
+  "LeftPanel_Button_CreateOrganizer": "Створити організатора",
+  "LeftPanel_Button_Organizers": "Організатори",
+  "LeftPanel_Button_CreateAttendees": "Стврити участника",
+  "LeftPanel_Button_Attendees": "Участники",
+  "LeftPanel_Button_AllEvents": "Всі події",
+  "LeftPanel_Button_MyOffice": "Мій кабінет"
 }

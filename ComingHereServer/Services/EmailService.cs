@@ -53,5 +53,12 @@ namespace ComingHereServer.Services
 
             await SendEmailAsync(toEmail, subject, htmlContent);
         }
+
+        public Task SendResetCodeAsync(string email, string code)
+        {
+            var subject = "Your password reset code";
+            var body = $"Use this code to reset your password: {code}";
+            return SendEmailAsync(email, subject, body);
+        }
     }
 }

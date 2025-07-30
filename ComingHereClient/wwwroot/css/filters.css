@@ -1,0 +1,86 @@
+﻿.ch-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+}
+
+.ch-filter-label {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+    user-select: none;
+}
+
+.ch-select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #fff;
+    transition: border-color 0.2s ease;
+}
+
+    .ch-select:hover {
+        border-color: #9c6300;
+    }
+
+.ch-date-filters {
+    display: flex;
+    gap: 10px;
+}
+
+.ch-date-input {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+    .ch-date-input:hover {
+        border-color: #9c6300;
+    }
+
+.ch-radio-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.ch-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ch-radio-input {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+.ch-reset-btn {
+    margin-top: 16px;
+    padding: 8px 14px;
+    font-weight: 600;
+    background-color: #860303;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    align-self: center;
+    width: fit-content;
+}
+
+    .ch-reset-btn:hover {
+        background-color: #be0202;
+    }

@@ -1,65 +1,67 @@
-﻿@using ComingHereShared.Constants
+﻿@using ComingHereClient.Services
+@using ComingHereShared.Constants
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject LocalizationService Loc
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+<div class="ch-nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="ch-nav">
+        <div class="ch-nav-item">
+            <NavLink class="ch-nav-link" href="" Match="NavLinkMatch.All">
+                @Loc["LeftPanel_Button_Home"]
             </NavLink>
         </div>
         @if (isGala)
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="create-event">
-                    <span class="bi bi-calendar-plus-fill-nav-menu" aria-hidden="true"></span> Создать событие
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="create-event">
+                    @Loc["LeftPanel_Button_CreateEvent"]
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="event-categories">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Управление категориями событий
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="event-categories">
+                    @Loc["LeftPanel_Button_EventCategory"]
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="organizer-categories">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Управление категориями организаторов
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="organizer-categories">
+                    @Loc["LeftPanel_Button_OrganizerCategories"]
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="participant-categories">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Управление категориями участников
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="participant-categories">
+                    @Loc["LeftPanel_Button_AttendeeCategories"]
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="create-organizer">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Создать организатора
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="create-organizer">
+                    @Loc["LeftPanel_Button_CreateOrganizer"]
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="organizers">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Организаторы
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="organizers">
+                    @Loc["LeftPanel_Button_Organizers"]
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="create-participant">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Создать участника
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="create-participant">
+                    @Loc["LeftPanel_Button_CreateAttendees"]
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="participants">
-                    <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Участники
+            <div class="ch-nav-item">
+                <NavLink class="ch-nav-link" href="participants">
+                    @Loc["LeftPanel_Button_Attendees"]
                 </NavLink>
             </div>
         }
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="allevents">
-                <span class="bi bi-list-ul" aria-hidden="true"></span> Все события
+        <div class="ch-nav-item">
+            <NavLink class="ch-nav-link" href="events/allevents">
+                @Loc["LeftPanel_Button_AllEvents"]
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <a class="nav-link" href="" @onclick="GoToMyCabinet">
-                <span class="bi bi-star-half" aria-hidden="true"></span> Мой кабинет
+        <div class="ch-nav-item">
+            <a class="ch-nav-link @(IsMyCabinetActive ? "active" : "")" href="#" @onclick="GoToMyCabinet">
+                @Loc["LeftPanel_Button_MyOffice"]
             </a>
         </div>
     </nav>
@@ -70,12 +72,17 @@
 @code {
     private bool collapseNavMenu = true;
     private bool isGala;
+    private bool IsMyCabinetActive;
+
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     protected override async Task OnInitializedAsync()
     {
         AuthenticationStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+
         await SetRoleAsync();
+        UpdateIsMyCabinetActive(Navigation.Uri);
     }
 
     private async void OnAuthStateChanged(Task<AuthenticationState> task)
@@ -93,6 +100,17 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        UpdateIsMyCabinetActive(e.Location);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateIsMyCabinetActive(string uri)
+    {
+        IsMyCabinetActive = uri.Contains("/user/");
     }
 
     private async Task GoToMyCabinet()
@@ -114,5 +132,6 @@
     public void Dispose()
     {
         AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthStateChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

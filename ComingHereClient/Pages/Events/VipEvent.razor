@@ -1,0 +1,30 @@
+﻿@using ComingHereClient.Services
+@using ComingHereShared.DTO.EventDtos
+@inject LocalizationService Loc
+
+@if (Event == null)
+{
+    <p>Загрузка...</p>
+}
+else
+{
+    <div class="vip-wrapper">
+        <div class="vip-container @(IsFading ? "fade-out" : "")">
+            <div class="vip-event">
+                <img src="@Event.Photos.FirstOrDefault()?.PhotoUrl" class="vip-photo" />
+                <div class="vip-info">
+                    <strong>@Event.Name</strong><br />
+                    <small>@Event.StartTime.ToString("dd.MM.yyyy HH:mm")</small><br />
+                    <span>@Event.Location</span><br />
+                    <span>ул. @Event.Address</span><br />
+                    <em>@Event.OrganizerName</em><br />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventDto? Event { get; set; }
+    [Parameter] public bool IsFading { get; set; }
+}

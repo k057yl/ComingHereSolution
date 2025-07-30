@@ -22,5 +22,17 @@
   "FilterEventsPage_ShowPast": "Past",
   "FilterEventsPage_ShowUpcoming": "Upcoming",
   "FilterEventsPage_Ascending": "Sort ascending",
-  "FilterEventsPage_Descending": "Sort descending"
+  "FilterEventsPage_Descending": "Sort descending",
+  "FilterEventsPage_ResetFilters": "Reset all filters",
+  "LeftPanel_Button_Home": "Home",
+  "LeftPanel_Button_CreateEvent": "Create event",
+  "LeftPanel_Button_EventCategory": "Event category",
+  "LeftPanel_Button_OrganizerCategories": "Organizer categories",
+  "LeftPanel_Button_AttendeeCategories": "Attendee categories",
+  "LeftPanel_Button_CreateOrganizer": "Create an organizer",
+  "LeftPanel_Button_Organizers": "Organizers",
+  "LeftPanel_Button_CreateAttendees": "Create attendees",
+  "LeftPanel_Button_Attendees": "Attendees",
+  "LeftPanel_Button_AllEvents": "All events",
+  "LeftPanel_Button_MyOffice": "My office"
 }

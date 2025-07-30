@@ -1,32 +1,12 @@
-﻿@using ComingHereClient.Services
-@using ComingHereShared.DTO
+﻿@using ComingHereClient.Pages.Events
+@using ComingHereClient.Services
 @using ComingHereShared.DTO.EventDtos
 @inject HttpClient Http
 @inject LocalizationService Loc
 
 <h5>Рекомендуем</h5>
 
-@if (vipEvent == null)
-{
-    <p>Загрузка...</p>
-}
-else
-{
-    <div class="vip-wrapper">
-        <div class="vip-container @(isFading ? "fade-out" : "")">
-            <div class="vip-event">
-                <img src="@vipEvent.Photos.FirstOrDefault()?.PhotoUrl" class="vip-photo" />
-                <div class="vip-info">
-                    <strong>@vipEvent.Name</strong><br />
-                    <small>@vipEvent.StartTime.ToString("dd.MM.yyyy HH:mm")</small><br />
-                    <span>@vipEvent.Location</span><br />
-                    <span>ул. @vipEvent.Address</span><br />
-                    <em>@vipEvent.OrganizerName</em><br />
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<VipEvent Event="vipEvent" IsFading="isFading" />
 
 @code {
     private EventDto? vipEvent;

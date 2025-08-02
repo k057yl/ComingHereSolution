@@ -20,18 +20,15 @@ window.renderStaticMap = function (mapId, lat, lng) {
 
     if (window._maps[mapId]) {
         try {
+            window._maps[mapId].off();
             window._maps[mapId].remove();
         } catch (e) {
             console.warn("Ошибка при удалении карты:", e);
         }
-        window._maps[mapId] = null;
+        delete window._maps[mapId];
     }
 
-    if (container._leaflet_id) {
-        try {
-            delete container._leaflet_id;
-        } catch { }
-    }
+    container.innerHTML = '';
 
     const map = L.map(mapId, {
         zoomControl: false,

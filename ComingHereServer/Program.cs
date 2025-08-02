@@ -1,5 +1,7 @@
 using ComingHereServer;
 using ComingHereServer.Data;
+using ComingHereServer.Interfaces;
+using ComingHereServer.Services;
 using ComingHereShared.Constants;
 using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -72,6 +74,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddControllers();
+
+builder.Services.AddSingleton<IHtmlSanitizingService, HtmlSanitizingService>();
 
 var app = builder.Build();
 

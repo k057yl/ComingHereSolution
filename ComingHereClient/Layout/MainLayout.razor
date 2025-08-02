@@ -1,10 +1,13 @@
 ﻿@using ComingHereClient.Services
+@using ComingHereClient.Provider
 @using ComingHereShared.Constants
 @using ComingHereShared.DTO
+@using System.Security.Claims
 @inherits LayoutComponentBase
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
+@inject CustomAuthStateProvider CustomAuthStateProvider
 @inject AuthService AuthService
 @inject IJSRuntime JS
 @inject LocalizationService Loc
@@ -87,14 +90,24 @@
         await LoadUserInfoAsync();
     }
 
-    private async void OnAuthStateChanged(Task<AuthenticationState> task)
+    private void OnAuthStateChanged(Task<AuthenticationState> task)
     {
-        await LoadUserInfoAsync();
-        await InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(async () =>
+        {
+            await LoadUserInfoAsync();
+            StateHasChanged();
+        });
     }
 
     private async Task LoadUserInfoAsync()
     {
+        if (!AuthService.IsAuthenticated)
+        {
+            isAuthenticated = false;
+            userEmail = null;
+            return;
+        }
+
         try
         {
             var user = await Http.GetFromJsonAsync<UserInfoDto>("api/account/me");
@@ -109,6 +122,14 @@
                 userEmail = null;
             }
         }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            // При 401 — сбрасываем состояние авторизации
+            isAuthenticated = false;
+            userEmail = null;
+
+            await AuthService.Logout();
+        }
         catch
         {
             isAuthenticated = false;
@@ -119,6 +140,16 @@
     private async Task Logout()
     {
         await AuthService.Logout();
+
+        // Сообщаем CustomAuthStateProvider, что пользователь вышел
+        await CustomAuthStateProvider.MarkUserAsLoggedOut();
+
+        isAuthenticated = false;
+        userEmail = null;
+
+        Nav.NavigateTo(ClientRoutes.Login, forceLoad: true);
+
+        StateHasChanged();
     }
 
     private async Task ChangeLanguage(string culture)

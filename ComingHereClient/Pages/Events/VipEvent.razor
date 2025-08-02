@@ -1,17 +1,14 @@
 ﻿@using ComingHereClient.Services
 @using ComingHereShared.DTO.EventDtos
 @inject LocalizationService Loc
+@inject NavigationManager Nav
 
-@if (Event == null)
-{
-    <p>Загрузка...</p>
-}
-else
-{
-    <div class="vip-wrapper">
-        <div class="vip-container @(IsFading ? "fade-out" : "")">
-            <div class="vip-event">
-                <img src="@Event.Photos.FirstOrDefault()?.PhotoUrl" class="vip-photo" />
+<div class="vip-wrapper">
+    <div class="vip-container @(IsFading ? "fade-out" : "")">
+        <div class="vip-event">
+            <img src="@ImageUrl" class="vip-photo" />
+            @if (Event != null)
+            {
                 <div class="vip-info">
                     <strong>@Event.Name</strong><br />
                     <small>@Event.StartTime.ToString("dd.MM.yyyy HH:mm")</small><br />
@@ -19,12 +16,27 @@ else
                     <span>ул. @Event.Address</span><br />
                     <em>@Event.OrganizerName</em><br />
                 </div>
-            </div>
+            }
         </div>
     </div>
-}
+</div>
 
 @code {
+    private string ImageUrl
+    {
+        get
+        {
+            var url = Event?.Photos?.FirstOrDefault()?.PhotoUrl;
+            if (string.IsNullOrEmpty(url))
+                return Nav.BaseUri.TrimEnd('/') + "/pic/default.png";
+
+            if (url.StartsWith("http://") || url.StartsWith("https://") || url.StartsWith("//"))
+                return url;
+
+            return Nav.BaseUri.TrimEnd('/') + "/" + url.TrimStart('/');
+        }
+    }
+
     [Parameter] public EventDto? Event { get; set; }
     [Parameter] public bool IsFading { get; set; }
 }

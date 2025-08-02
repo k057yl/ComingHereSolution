@@ -6,7 +6,14 @@
 
 <h5>Рекомендуем</h5>
 
-<VipEvent Event="vipEvent" IsFading="isFading" />
+@if (vipEvent != null)
+{
+    <VipEvent Event="vipEvent" IsFading="isFading" />
+}
+else
+{
+    <img src="pic/default.png" class="vip-photo" />
+}
 
 @code {
     private EventDto? vipEvent;
@@ -34,7 +41,38 @@
 
     private async Task LoadVipEvent()
     {
-        vipEvent = await Http.GetFromJsonAsync<EventDto>($"api/events/vip-random?culture={Loc.CurrentCulture}");
+        try
+        {
+            var culture = Loc.CurrentCulture;
+            var response = await Http.GetAsync($"api/events/vip-random?culture={culture}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
+                    vipEvent = null;
+                }
+                else
+                {
+                    vipEvent = await response.Content.ReadFromJsonAsync<EventDto>();
+                }
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                vipEvent = null;
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                Console.Error.WriteLine($"Ошибка: {response.StatusCode}, {msg}");
+                vipEvent = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Ошибка загрузки VIP-события: {ex.Message}");
+            vipEvent = null;
+        }
     }
 
     private async Task OnLanguageChanged()

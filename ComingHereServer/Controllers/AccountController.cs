@@ -1,6 +1,7 @@
 ﻿using ComingHereServer.Services;
 using ComingHereShared.DTO;
 using ComingHereShared.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -94,6 +95,7 @@ namespace ComingHereServer.Controllers
         }
 
         [HttpGet("me")]
+        [Authorize]
         public IActionResult GetCurrentUser()
         {
             if (User.Identity?.IsAuthenticated ?? false)

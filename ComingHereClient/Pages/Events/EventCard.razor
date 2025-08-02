@@ -74,6 +74,19 @@
 
     private int? lastRenderedEventId = null;
 
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        var oldId = Event?.Id;
+        parameters.SetParameterProperties(this);
+
+        if (Event?.Id != oldId)
+        {
+            lastRenderedEventId = null;
+        }
+
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (lastRenderedEventId != Event.Id)

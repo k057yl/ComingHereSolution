@@ -1,6 +1,9 @@
 ﻿using ComingHereServer.Data;
+using ComingHereServer.Interfaces;
+using ComingHereServer.Services;
 using ComingHereShared.DTO.EventDtos;
 using ComingHereShared.Entities;
+using Ganss.Xss;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,17 +17,21 @@ namespace ComingHereServer.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHtmlSanitizingService _sanitizingService;
 
-        public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IHtmlSanitizingService sanitizingService)
         {
             _context = context;
             _userManager = userManager;
+            _sanitizingService = sanitizingService;
         }
 
         [Authorize(Roles = "Gala")]
         [HttpPost]
         public async Task<IActionResult> Create(EventCreateDto dto)
         {
+            DtoSanitizer.Sanitize(dto, _sanitizingService);//**************
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return Unauthorized("Пользователь не найден.");
@@ -138,22 +145,21 @@ namespace ComingHereServer.Controllers
             return EventDto.FromEntity(ev, culture);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Gala")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteEvent(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
+            if (user == null)
+                return Unauthorized();
 
             var ev = await _context.Events
                 .Include(e => e.Photos)
                 .Include(e => e.Organizer)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
-            if (ev == null) return NotFound();
-
-            if (ev.Organizer.ApplicationUserId != user.Id)
-                return Forbid("Ты не можешь удалять чужие события");
+            if (ev == null)
+                return NotFound();
 
             _context.EventPhotos.RemoveRange(ev.Photos);
             _context.Events.Remove(ev);
@@ -244,8 +250,11 @@ namespace ComingHereServer.Controllers
                 .Include(e => e.Photos)
                 .ToListAsync();
 
+            // Возвращаем 204 NoContent, если нет VIP-событий.
+            // Клиент должен учитывать, что ответ пустой.
+            // Это позволяет избежать ошибок при обработке пустого списка.
             if (!vipEvents.Any())
-                return NotFound();
+                return NoContent();
 
             var random = vipEvents[new Random().Next(vipEvents.Count)];
             return Ok(EventDto.FromEntity(random, culture));

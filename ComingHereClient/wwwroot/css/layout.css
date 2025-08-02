@@ -137,12 +137,64 @@
         .lang-menu li:hover {
             background-color: #444;
         }
-
-.sidebar-left,
-.sidebar-right {
+/*LR_Panels*/
+.ch-sidebar-left,
+.ch-sidebar-right {
     width: 260px;
     background-color: var(--sidebar-bg);
-    /*color: var(--sidebar-text);*/
     padding: 1rem;
     flex-shrink: 0;
 }
+
+.ch-nav-wrapper {
+    overflow-y: auto;
+    height: 100%;
+    padding: 1rem 0;
+    background-color: var(--main-panel-bg-color);
+    border-radius: 8px;
+}
+
+.ch-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 10px;
+}
+
+.ch-nav-item {
+    display: block;
+}
+
+.ch-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--main-panel-text-color);
+    background-color: transparent;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    gap: 10px;
+}
+
+    .ch-nav-link:hover {
+        background-color: #2c2c3c;
+        color: var(--main-panel-text-hover-color);
+        transform: translateX(4px);
+    }
+
+    .ch-nav-link:active {
+        background-color: #3d3d4d;
+        color: var(--main-panel-text-hover-color);
+    }
+
+    .ch-nav-link.active {
+        background-color: #444;
+        color: var(--main-panel-text-hover-color);
+        transform: none;
+    }
+
+    .ch-nav-link span {
+        font-size: 1.2rem;
+    }

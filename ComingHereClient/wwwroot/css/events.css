@@ -31,3 +31,27 @@
         padding-left: 10px;
         border-color: #bbb;
     }
+
+/*test*/
+.ch-filter-container .ch-select {
+    background-color: var(--input-bg-color);
+    color: var(--input-text-color);
+    border: 1px solid var(--input-border-color);
+}
+
+.ch-filter-container .ch-date-input {
+    background-color: var(--input-bg-color);
+    color: var(--input-text-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+.ch-radio-label {
+    color: var(--input-text-color);
+    padding: 0.25rem;
+}
+
+[data-theme="dark"] .ch-date-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}

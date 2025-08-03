@@ -31,5 +31,9 @@ namespace ComingHereShared.DTO.EventDtos
 
         // Вложенные сущности
         public EventDetailsDto Details { get; set; } = new();
+
+        public bool IsRecurring { get; set; }
+
+        public List<EventScheduleDto> Schedules { get; set; } = new();
     }
 }

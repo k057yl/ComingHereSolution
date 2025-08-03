@@ -3,7 +3,6 @@ using ComingHereServer.Interfaces;
 using ComingHereServer.Services;
 using ComingHereShared.DTO.EventDtos;
 using ComingHereShared.Entities;
-using Ganss.Xss;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +29,7 @@ namespace ComingHereServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(EventCreateDto dto)
         {
-            DtoSanitizer.Sanitize(dto, _sanitizingService);//**************
+            DtoSanitizer.Sanitize(dto, _sanitizingService);
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -45,8 +44,6 @@ namespace ComingHereServer.Controllers
                 Name = dto.Name,
                 Description = dto.Description,
                 Location = dto.Location,
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
                 CategoryId = dto.CategoryId,
                 OrganizerId = dto.OrganizerId,
                 IsVip = dto.IsVip,
@@ -65,11 +62,34 @@ namespace ComingHereServer.Controllers
                         Telegram = dto.Details.ContactInfo.Telegram,
                         Instagram = dto.Details.ContactInfo.Instagram
                     }
-                }
+                },
+                IsRecurring = dto.IsRecurring,
             };
+
+            if (!dto.IsRecurring)
+            {
+                newEvent.StartTime = dto.StartTime;
+                newEvent.EndTime = dto.EndTime;
+            }
 
             _context.Events.Add(newEvent);
             await _context.SaveChangesAsync();
+
+            if (dto.IsRecurring && dto.Schedules != null && dto.Schedules.Any())
+            {
+                var schedules = dto.Schedules.Select(s => new EventSchedule
+                {
+                    EventId = newEvent.Id,
+                    DayOfWeek = s.DayOfWeek,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    StartDate = s.StartDate,
+                    EndDate = s.EndDate
+                }).ToList();
+
+                _context.EventSchedules.AddRange(schedules);
+                await _context.SaveChangesAsync();
+            }
 
             if (dto.ParticipantIds != null && dto.ParticipantIds.Any())
             {

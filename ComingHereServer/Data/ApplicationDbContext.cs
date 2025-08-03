@@ -27,6 +27,9 @@ namespace ComingHereServer.Data
         public DbSet<EventContactInfo> EventContactInfos { get; set; }
         public DbSet<EventReview> EventReviews { get; set; }
         public DbSet<UserComment> UserComments { get; set; }
+        public DbSet<EventSchedule> EventSchedules { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -111,6 +114,13 @@ namespace ComingHereServer.Data
                 .WithMany()
                 .HasForeignKey(c => c.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Связь: Event -> EventSchedules (1 ко многим)
+            builder.Entity<EventSchedule>()
+                .HasOne(es => es.Event)
+                .WithMany(e => e.Schedules)
+                .HasForeignKey(es => es.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // JSON-конвертер для LocalizedString
             var options = new JsonSerializerOptions();

@@ -28,6 +28,10 @@ namespace ComingHereShared.Entities
                 : (DateTime?)null;
         }
 
+        // Повторяемость события
+        public bool IsRecurring { get; set; }
+        public ICollection<EventSchedule> Schedules { get; set; } = new List<EventSchedule>();
+
         // Организатор
         public int OrganizerId { get; set; }
         public EventOrganizer Organizer { get; set; } = null!;

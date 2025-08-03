@@ -49,19 +49,73 @@
                 <InputTextArea class="form-control" @bind-Value="DescriptionEn" />
             </div>
 
-            <!-- Дата и время -->
-            <div class="mb-3">
-                <label class="form-label">Дата и время начала</label>
-                <input type="datetime-local" class="form-control"
-                       value="@BindDateTime(newEvent.StartTime)"
-                       @oninput="e => newEvent.StartTime = ParseDateTime(e.Value?.ToString())" />
+            <!-- Флаг повторяющегося события -->
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="isRecurringCheck" @bind="newEvent.IsRecurring" />
+                <label class="form-check-label" for="isRecurringCheck">Повторяющееся событие</label>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Дата и время окончания</label>
-                <input type="datetime-local" class="form-control"
-                       value="@BindDateTime(newEvent.EndTime ?? DateTime.Now)"
-                       @oninput="e => newEvent.EndTime = ParseDateTime(e.Value?.ToString())" />
-            </div>
+
+            @if (!newEvent.IsRecurring)
+            {
+                <!-- Обычные дата и время -->
+                <div class="mb-3">
+                    <label class="form-label">Дата и время начала</label>
+                    <input type="datetime-local" class="form-control"
+                           value="@BindDateTime(newEvent.StartTime)"
+                           @oninput="e => newEvent.StartTime = ParseDateTime(e.Value?.ToString())" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Дата и время окончания</label>
+                    <input type="datetime-local" class="form-control"
+                           value="@BindDateTime(newEvent.EndTime ?? DateTime.Now)"
+                           @oninput="e => newEvent.EndTime = ParseDateTime(e.Value?.ToString())" />
+                </div>
+            }
+            else
+            {
+                <!-- Расписание повторений -->
+                <div class="mb-3 border rounded p-3">
+                    <h5>Расписание повторений</h5>
+                    @if (newEvent.Schedules?.Count > 0)
+                    {
+                        @for (int i = 0; i < newEvent.Schedules.Count; i++)
+                        {
+                            var schedule = newEvent.Schedules[i];
+
+                            <div class="mb-2 d-flex align-items-center gap-2 flex-wrap" @key="schedule">
+                                <select @bind="schedule.DayOfWeek" class="form-select" style="width: 120px;">
+                                    @foreach (var day in Enum.GetValues<DayOfWeek>())
+                                    {
+                                        <option value="@day">@day</option>
+                                    }
+                                </select>
+
+                                <input type="time" class="form-control" style="width: 100px;"
+                                       value="@BindTime(schedule.StartTime)"
+                                       @onchange="e => schedule.StartTime = ParseTime(e.Value?.ToString())" />
+                                <input type="time" class="form-control" style="width: 100px;"
+                                       value="@BindTime(schedule.EndTime)"
+                                       @onchange="e => schedule.EndTime = ParseTime(e.Value?.ToString())" />
+
+                                <input type="date" class="form-control" style="width: 140px;"
+                                       value="@BindDateOnly(schedule.StartDate)"
+                                       @onchange="e => schedule.StartDate = ParseDateOnly(e.Value?.ToString())" />
+                                <input type="date" class="form-control" style="width: 140px;"
+                                       value="@BindNullableDateOnly(schedule.EndDate)"
+                                       @onchange="e => schedule.EndDate = ParseNullableDateOnly(e.Value?.ToString())" />
+
+                                <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveSchedule(i)">Удалить</button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Нет расписаний. Нажми кнопку ниже, чтобы добавить первое.</p>
+                    }
+
+                    <button type="button" class="btn btn-primary btn-sm mt-2" @onclick="AddSchedule">Добавить расписание</button>
+                </div>
+            }
 
             <!-- Место -->
             <div class="mb-3">
@@ -178,8 +232,10 @@
         {
             Latitude = 48.9226,
             Longitude = 24.7111,
+            ContactInfo = new EventContactInfoDto()
         },
-        ParticipantIds = new List<int>()
+        ParticipantIds = new List<int>(),
+        Schedules = new List<EventScheduleDto>()
     };
 
     private string? authToken;
@@ -267,7 +323,6 @@
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
         var response = await client.PostAsJsonAsync("api/events", newEvent);
-
         if (response.IsSuccessStatusCode)
         {
             var created = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
@@ -327,6 +382,64 @@
         if (DateTime.TryParse(s, out var dt))
             return dt;
         return DateTime.Now;
+    }
+
+    private string BindTime(TimeOnly time) => time.ToString("HH:mm");
+
+    private TimeOnly ParseTime(string? s)
+    {
+        if (TimeOnly.TryParse(s, out var time))
+            return time;
+        return TimeOnly.MinValue;
+    }
+
+    private string BindDateOnly(DateOnly date) => date.ToString("yyyy-MM-dd");
+
+    private DateOnly ParseDateOnly(string? s)
+    {
+        if (DateOnly.TryParse(s, out var date))
+            return date;
+        return DateOnly.MinValue;
+    }
+
+    private string BindNullableDateOnly(DateOnly? date)
+    {
+        if (date.HasValue)
+            return date.Value.ToString("yyyy-MM-dd");
+        return string.Empty;
+    }
+
+    private DateOnly? ParseNullableDateOnly(string? s)
+    {
+        if (string.IsNullOrEmpty(s))
+            return null;
+        if (DateOnly.TryParse(s, out var date))
+            return date;
+        return null;
+    }
+
+    private void AddSchedule()
+    {
+        newEvent.Schedules.Add(new EventScheduleDto
+        {
+            DayOfWeek = DayOfWeek.Monday,
+            StartTime = TimeOnly.MinValue,
+            EndTime = TimeOnly.MinValue,
+            StartDate = DateOnly.FromDateTime(DateTime.Today),
+            EndDate = null
+        });
+    }
+
+    private void RemoveSchedule(int index)
+    {
+        if (index >= 0 && index < newEvent.Schedules.Count)
+        {
+            newEvent.Schedules.RemoveAt(index);
+        }
+        else
+        {
+            Console.WriteLine($"❗ Попытка удалить расписание с невалидным индексом {index}");
+        }
     }
 
     private string NameUk

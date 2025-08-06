@@ -8,21 +8,31 @@
     const iconUrls = {
         green: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
         yellow: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
-        blue: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png'
+        blue: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+        violet: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png'
     };
 
     const now = new Date();
 
     events.forEach(ev => {
-        if (ev.latitude && ev.longitude && ev.startTime) {
-            const startTime = new Date(ev.startTime);
-            const diffDays = (startTime - now) / (1000 * 60 * 60 * 24);
+        if (ev.latitude && ev.longitude) {
+            let markerColor = 'blue'; // default
 
-            let markerColor = 'blue';
-            if (diffDays < 1) {
-                markerColor = 'green';
-            } else if (diffDays <= 7) {
-                markerColor = 'yellow';
+            const isRecurring = String(ev.isRecurring).toLowerCase() === "true" || ev.isRecurring === 1;
+
+            console.log("Event:", ev.name, "isRecurring:", ev.isRecurring, "->", isRecurring);
+
+            if (isRecurring) {
+                markerColor = 'violet';
+            } else if (ev.startTime) {
+                const startTime = new Date(ev.startTime);
+                const diffDays = (startTime - now) / (1000 * 60 * 60 * 24);
+
+                if (diffDays < 1) {
+                    markerColor = 'green';
+                } else if (diffDays <= 7) {
+                    markerColor = 'yellow';
+                }
             }
 
             const icon = new L.Icon({

@@ -22,6 +22,7 @@ namespace ComingHereShared.DTO.EventDtos
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = "";
         public bool IsVip { get; set; }
+        public bool IsRecurring { get; set; }
         public string OrganizerName { get; set; } = "";
         public int OrganizerId { get; set; }
 
@@ -33,7 +34,7 @@ namespace ComingHereShared.DTO.EventDtos
         public string? Instagram { get; set; }
 
         public List<EventPhotoDto> Photos { get; set; } = new();
-        public List<EventReviewDto> Reviews { get; set; } = new();//********
+        public List<EventReviewDto> Reviews { get; set; } = new();
 
         public static EventDto FromEntity(Event ev, string culture)
         {
@@ -56,6 +57,7 @@ namespace ComingHereShared.DTO.EventDtos
                 CategoryId = ev.CategoryId,
                 CategoryName = ev.Category?.Name ?? "-",
                 IsVip = ev.IsVip,
+                IsRecurring = ev.IsRecurring,
                 Phone = contact?.Phone ?? "",
                 Email = contact?.Email ?? "",
                 Website = contact?.Website ?? "",

@@ -89,10 +89,17 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (lastRenderedEventId != Event.Id)
+        if (firstRender)
         {
-            lastRenderedEventId = Event.Id;
             await JS.InvokeVoidAsync("renderStaticMap", $"map-{Event.Id}", Event.Latitude, Event.Longitude);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (lastRenderedEventId.HasValue)
+        {
+            await JS.InvokeVoidAsync("removeMap", $"map-{lastRenderedEventId}");
         }
     }
 }

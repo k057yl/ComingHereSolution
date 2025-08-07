@@ -33,7 +33,7 @@ namespace ComingHereServer.Controllers
                 return BadRequest("Вы уже оставили отзыв для этого события.");
 
             var evt = await _context.Events.FindAsync(dto.EventId);
-            if (evt == null || evt.EndTime is null || evt.EndTime > DateTime.UtcNow)
+            if (evt == null || (!evt.IsRecurring && (evt.EndTime == null || evt.EndTime > DateTime.UtcNow)))
                 return BadRequest("Нельзя оставить отзыв до завершения события.");
 
             var attended = await _context.EventAttendees.AnyAsync(a =>

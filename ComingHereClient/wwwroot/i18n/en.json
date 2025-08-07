@@ -1,4 +1,8 @@
 {
+  "Loading": "Loading",
+  "Event_NotFound": "Events not found",
+  "Event_Button_GoHome": "Go to Home",
+  "Event_Button_GoToEvents": "Go to Events",
   "HomePage_Hello": "Hello!",
   "HomePage_WelcomeMessage_Part1": "Welcome to the liveliest platform of Ivano-Frankivsk - the place where everything that makes our city alive and unique comes together!",
   "HomePage_WelcomeMessage_Part2": "Want to know where the next exhibition is, where awesome concerts will take place, or where the hottest parties will gather? You’re in the right spot!",
@@ -8,6 +12,7 @@
   "HomePage_Map_Today": "Today",
   "HomePage_Map_ThisWeek": "This Week",
   "HomePage_Map_Later": "Later",
+  "HomePage_Map_RegularEvent": "Regular event",
   "CreateEventPage_Title": "Create Event",
   "CreateEventPage_EventName": "Event Name",
   "CreateEventPage_Category": "Category",

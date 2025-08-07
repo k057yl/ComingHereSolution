@@ -1,21 +1,24 @@
 ﻿@page "/events/{id:int}"
+@using ComingHereClient.Services
 @using ComingHereShared.DTO.EventDtos
 @using ComingHereShared.Entities
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+@inject LocalizationService Loc
 
 <h3 class="text-center mb-4">Просмотр события</h3>
 
-<button class="btn btn-secondary mb-3" @onclick="GoBack">← Назад к списку событий</button>
+<button class="btn btn-secondary mb-3" @onclick="GoBackToHome">← @Loc["Event_Button_GoHome"]</button>
+<button class="btn btn-secondary mb-3" @onclick="GoBackToAllEvents">← @Loc["Event_Button_GoToEvents"]</button>
 
 @if (isLoading)
 {
-    <p class="text-center">Загрузка...</p>
+    <p class="text-center">@Loc["Loading"]</p>
 }
 else if (ev == null)
 {
-    <p class="text-center">Событие не найдено.</p>
+    <p class="text-center">"@Loc["Event_NotFound"]"</p>
 }
 else
 {
@@ -45,6 +48,14 @@ else
             <div class="card mt-4">
                 <div class="card-header">Оставить отзыв</div>
                 <div class="card-body">
+
+                    @if (!CanSubmitReview)
+                    {
+                        <div class="alert alert-warning">
+                            Обратите внимание: комментировать событие можно только после его окончания.
+                        </div>
+                    }
+
                     @if (submitError != null)
                     {
                         <div class="alert alert-danger">@submitError</div>
@@ -65,7 +76,9 @@ else
                         <input type="url" id="photourl" class="form-control" @bind="reviewInput.PhotoUrl" />
                     </div>
 
-                    <button class="btn btn-primary" @onclick="SubmitReview" disabled="@isSubmitting">
+                    <button class="btn btn-primary"
+                            @onclick="SubmitReview"
+                            disabled="@(!CanSubmitReview || isSubmitting)">
                         @(isSubmitting ? "Отправка..." : "Отправить отзыв")
                     </button>
                 </div>
@@ -112,6 +125,9 @@ else
 
     private List<EventReviewDtoWithReplies> reviews = new();
 
+    private bool CanSubmitReview =>
+        ev != null && (ev.IsRecurring || (ev.EndTime != null && ev.EndTime <= DateTime.UtcNow));
+
     protected override async Task OnInitializedAsync()
     {
         var client = HttpClientFactory.CreateClient("AuthorizedClient");
@@ -122,6 +138,8 @@ else
 
             if (ev != null)
                 ev.Reviews = reviews.Cast<EventReviewDto>().ToList();
+
+            reviewSuccess = false; // сброс после перехода между событиями
         }
         catch (Exception ex)
         {
@@ -143,12 +161,19 @@ else
         }
     }
 
-    private void GoBack() => Nav.NavigateTo("/events/allevents");
+    private void GoBackToAllEvents() => Nav.NavigateTo("/events/allevents");
+    private void GoBackToHome() => Nav.NavigateTo("/");
 
     private async Task SubmitReview()
     {
         submitError = null;
         reviewSuccess = false;
+
+        if (!CanSubmitReview)
+        {
+            submitError = "Нельзя отправлять отзыв до завершения события.";
+            return;
+        }
 
         if (reviewInput.Rating < 1 || reviewInput.Rating > 5)
         {
@@ -183,6 +208,7 @@ else
             }
             else
             {
+                reviewSuccess = false;
                 var msg = await response.Content.ReadAsStringAsync();
                 submitError = $"Ошибка: {msg}";
             }
@@ -219,10 +245,6 @@ else
             if (ev != null)
                 ev.Reviews = reviews.Cast<EventReviewDto>().ToList();
             StateHasChanged();
-        }
-        else
-        {
-            // можно добавить обработку ошибок
         }
     }
 }

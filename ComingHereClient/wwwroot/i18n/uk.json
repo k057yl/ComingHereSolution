@@ -1,4 +1,8 @@
 {
+  "Loading": "Завантаження...",
+  "Event_NotFound": "Події не знайдені",
+  "Event_Button_GoHome": "На головну",
+  "Event_Button_GoToEvents": "До подій",
   "HomePage_Hello": "Привіт!",
   "HomePage_WelcomeMessage_Part1": "Вітаємо на найжвавішій платформі Івано-Франківська - тут збирається все, що робить наше місто живим та неповторним!",
   "HomePage_WelcomeMessage_Part2": "Хочеш знати, де відбудеться найближча виставка, де гратимуть крутезні концерти чи де зберуться тусовки? Ти у правильному місці!",
@@ -8,6 +12,7 @@
   "HomePage_Map_Today": "Сьогодні",
   "HomePage_Map_ThisWeek": "Цього тижня",
   "HomePage_Map_Later": "Згодом",
+  "HomePage_Map_RegularEvent": "Регулярний захід",
   "CreateEventPage_Title": "Створити подію",
   "CreateEventPage_EventName": "Назва події",
   "CreateEventPage_Category": "Категорія",

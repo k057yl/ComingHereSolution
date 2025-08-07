@@ -1,4 +1,4 @@
-﻿window._maps = window._maps || {};
+﻿/*window._maps = window._maps || {};
 
 window.renderStaticMap = function (mapId, lat, lng) {
     if (!window.L) {
@@ -54,3 +54,11 @@ window.renderStaticMap = function (mapId, lat, lng) {
         map.invalidateSize();
     }, 200);
 };
+
+window.removeMap = function (mapId) {
+    if (window._maps[mapId]) {
+        window._maps[mapId].off();
+        window._maps[mapId].remove();
+        delete window._maps[mapId];
+    }
+};*/

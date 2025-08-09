@@ -367,3 +367,8 @@ appsettings.json
 Dockerfile
 docker-compose.yml
 docker-compose.override.yml
+
+# Игнорировать содержимое папки uploads
+ComingHereServer/uploads/*
+# Но оставить .gitkeep
+!ComingHereServer/uploads/.gitkeep

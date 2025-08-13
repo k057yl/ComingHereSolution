@@ -80,7 +80,7 @@ namespace ComingHereServer.Controllers
                 {
                     Rating = r.Rating,
                     Comment = r.Comment,
-                    PhotoUrl = r.PhotoUrl,
+                    //PhotoUrl = r.PhotoUrl,
                     AuthorName = r.User.UserName,
                     CreatedAt = r.CreatedAt
                 })
@@ -112,7 +112,7 @@ namespace ComingHereServer.Controllers
                 UserId = userId!,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
-                PhotoUrl = dto.PhotoUrl,
+                PhotoUrl = null, //dto.PhotoUrl
                 CreatedAt = DateTime.UtcNow,
                 ParentReviewId = dto.ParentReviewId
             };

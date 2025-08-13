@@ -9,8 +9,10 @@
 
 <h3 class="text-center mb-4">Просмотр события</h3>
 
-<button class="btn btn-secondary mb-3" @onclick="GoBackToHome">← @Loc["Event_Button_GoHome"]</button>
-<button class="btn btn-secondary mb-3" @onclick="GoBackToAllEvents">← @Loc["Event_Button_GoToEvents"]</button>
+<div class="nav-buttons">
+    <button class="btn-custom" @onclick="GoBackToHome">← @Loc["Event_Button_GoHome"]</button>
+    <button class="btn-custom" @onclick="GoBackToAllEvents">← @Loc["Event_Button_GoToEvents"]</button>
+</div>
 
 @if (isLoading)
 {
@@ -23,21 +25,23 @@ else if (ev == null)
 else
 {
     <div class="container">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">@ev.Name</h4>
-                <p class="card-text"><strong>Категория:</strong> @ev.CategoryName</p>
-                <p class="card-text">@ev.Description</p>
-                <p class="card-text"><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
-                <p class="card-text"><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
-                <p class="card-text"><strong>Место:</strong> @ev.Location (@ev.Latitude, @ev.Longitude)</p>
-                <div id="map-@ev.Id" style="height: 400px; width: 100%;" class="mb-3"></div>
-                <p class="card-text"><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
-                <p class="card-text"><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
+        <div class="event-container">
+            <div class="event-card">
+                <h4>@ev.Name</h4>
+                <p><strong>Категория:</strong> @ev.CategoryName</p>
+                <p>@ev.Description</p>
+                <p><strong>Начало:</strong> @ev.StartTime.ToLocalTime().ToString("g")</p>
+                <p><strong>Окончание:</strong> @(ev.EndTime?.ToLocalTime().ToString("g") ?? "-")</p>
+                <p><strong>Место:</strong> @ev.Location (@ev.Latitude, @ev.Longitude)</p>
+
+                <div id="map-@ev.Id" class="event-map"></div>
+
+                <p><strong>Цена:</strong> @(ev.Price != null ? $"{ev.Price} Грн" : "-")</p>
+                <p><strong>Макс. участников:</strong> @(ev.MaxAttendees?.ToString() ?? "-")</p>
 
                 @if (ev.Photos?.Count > 0)
                 {
-                    <img src="@ev.Photos[0].PhotoUrl" alt="Фото" class="img-fluid rounded mb-2" />
+                    <img src="@ev.Photos[0].PhotoUrl" alt="Фото" class="event-image" />
                 }
             </div>
         </div>

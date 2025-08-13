@@ -36,6 +36,9 @@ namespace ComingHereShared.DTO.EventDtos
         public List<EventPhotoDto> Photos { get; set; } = new();
         public List<EventReviewDto> Reviews { get; set; } = new();
 
+        // Добавляем расписание
+        public List<EventScheduleDto> Schedule { get; set; } = new();
+
         public static EventDto FromEntity(Event ev, string culture)
         {
             var details = ev.Details;
@@ -71,7 +74,15 @@ namespace ComingHereShared.DTO.EventDtos
                 {
                     Id = p.Id,
                     PhotoUrl = p.PhotoUrl
-                }).ToList() ?? new List<EventPhotoDto>()
+                }).ToList() ?? new List<EventPhotoDto>(),
+                Schedule = ev.Schedules?.Select(s => new EventScheduleDto
+                {
+                    DayOfWeek = s.DayOfWeek,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    StartDate = s.StartDate,
+                    EndDate = s.EndDate
+                }).ToList() ?? new List<EventScheduleDto>()
             };
         }
     }

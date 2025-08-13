@@ -155,7 +155,8 @@ namespace ComingHereServer.Controllers
                 .Include(e => e.Photos)
                 .Include(e => e.Category)
                 .Include(e => e.Details)
-                .ThenInclude(d => d.ContactInfo)
+                    .ThenInclude(d => d.ContactInfo)
+                .Include(e => e.Schedules)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == id);
 
@@ -227,6 +228,7 @@ namespace ComingHereServer.Controllers
                 .Include(e => e.Category)
                 .Include(e => e.Details)
                     .ThenInclude(d => d.ContactInfo)
+                .Include(e => e.Schedules)
                 .Include(e => e.Organizer)
                 .ToListAsync();
 

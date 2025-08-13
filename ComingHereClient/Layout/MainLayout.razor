@@ -26,19 +26,19 @@
             <div class="greeting">
                 @if (isAuthenticated)
                 {
-                    <span>Привет, @userEmail!</span>
+                    <span>@Loc["TopPanel_Hello"], @userEmail!</span>
                 }
                 else
                 {
-                    <span>Вы не авторизованы</span>
+                    <span>@Loc["TopPanel_NotAuth"]</span>
                 }
             </div>
 
             <div class="button-row">
-                <button class="custom-btn" @onclick="ToggleTheme">Тема</button>
+                <button class="custom-btn" @onclick="ToggleTheme">@Loc["TopPanel_Theme"]</button>
 
                 <div class="language-dropdown" id="langDropdown">
-                    <button class="custom-btn" @onclick="ToggleLangMenu">Язык</button>
+                    <button class="custom-btn" @onclick="ToggleLangMenu">@Loc["TopPanel_Language"]</button>
                     @if (langMenuVisible)
                     {
                         <ul class="lang-menu">
@@ -50,12 +50,12 @@
 
                 @if (isAuthenticated)
                 {
-                    <button class="custom-btn" @onclick="Logout">Выйти</button>
+                    <button class="custom-btn" @onclick="Logout">@Loc["TopPanel_Logout"]</button>
                 }
                 else
                 {
-                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Login)'>Войти</button>
-                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Register)'>Регистрация</button>
+                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Login)'>@Loc["TopPanel_Login"]</button>
+                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Register)'>@Loc["TopPanel_Register"]</button>
                 }
             </div>
         </div>
@@ -101,36 +101,17 @@
 
     private async Task LoadUserInfoAsync()
     {
-        if (!AuthService.IsAuthenticated)
-        {
-            isAuthenticated = false;
-            userEmail = null;
-            return;
-        }
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        try
+        if (user.Identity?.IsAuthenticated ?? false)
         {
-            var user = await Http.GetFromJsonAsync<UserInfoDto>("api/account/me");
-            if (user != null && !string.IsNullOrEmpty(user.Email))
-            {
-                userEmail = user.Email;
-                isAuthenticated = true;
-            }
-            else
-            {
-                isAuthenticated = false;
-                userEmail = null;
-            }
+            isAuthenticated = true;
+            userEmail = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value
+                        ?? user.Identity.Name
+                        ?? "User";
         }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            // При 401 — сбрасываем состояние авторизации
-            isAuthenticated = false;
-            userEmail = null;
-
-            await AuthService.Logout();
-        }
-        catch
+        else
         {
             isAuthenticated = false;
             userEmail = null;

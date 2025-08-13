@@ -55,3 +55,63 @@
 [data-theme="dark"] .ch-date-input::-webkit-calendar-picker-indicator {
     filter: invert(1);
 }
+
+/*New*/
+.page-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.nav-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-custom {
+    background-color: #555;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 200px;
+    text-align: center;
+}
+
+    .btn-custom:hover {
+        background-color: #333;
+    }
+
+.loading-text {
+    text-align: center;
+}
+
+.event-container {
+    display: flex;
+    justify-content: center;
+}
+
+.event-card {
+    max-width: 500px;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.event-map {
+    width: 400px;
+    height: 300px;
+    background-color: #eee;
+    margin-bottom: 10px;
+}
+
+.event-image {
+    width: 400px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 4px;
+}

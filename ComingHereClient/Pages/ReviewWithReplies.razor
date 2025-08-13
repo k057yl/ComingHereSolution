@@ -70,10 +70,10 @@
     }
     <p>@Review.Comment</p>
 
-    @if (!string.IsNullOrEmpty(Review.PhotoUrl))
+    @*@if (!string.IsNullOrEmpty(Review.PhotoUrl))
     {
         <img src="@Review.PhotoUrl" alt="Фото к отзыву" class="review-img" />
-    }
+    }*@
 
     <button class="btn btn-sm btn-link reply-button" @onclick="TriggerReply">
         @(showReplyForm ? "Отмена" : "Ответить")

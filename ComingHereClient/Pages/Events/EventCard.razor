@@ -11,22 +11,38 @@
             <img src="@Event.Photos[0].PhotoUrl" alt="Фото" class="img-container-allevent" />
         }
 
-        <p class="card-text"><strong>@Loc["Category"]:</strong> @Event.CategoryName</p>
+        <p class="card-text"><strong>@Loc["AllEventsPage_Category"]:</strong> @Event.CategoryName</p>
         <p class="card-text description-single-line">@Event.Description</p>
-        <p class="card-text"><strong>@Loc["Start"]:</strong> @Event.StartTime.ToUniversalTime().ToString("yyyy-MM-dd HH:mm") UTC</p>
-        <p class="card-text"><strong>@Loc["End"]:</strong> @(Event.EndTime?.ToUniversalTime().ToString("yyyy-MM-dd HH:mm") + " UTC" ?? "-")</p>
-        <p class="card-text"><strong>@Loc["Location"]:</strong> @Event.Location</p>
-        <p class="card-text"><strong>@Loc["Organizer"]:</strong> @Event.OrganizerName</p>
+
+        @if (!Event.IsRecurring)
+        {
+            <p class="card-text"><strong>@Loc["AllEventsPage_StartEvent"]:</strong> @Event.StartTime.ToUniversalTime().ToString("yyyy-MM-dd HH:mm") UTC</p>
+            <p class="card-text"><strong>@Loc["AllEventsPage_EndEvent"]:</strong> @(Event.EndTime?.ToUniversalTime().ToString("yyyy-MM-dd HH:mm") + " UTC" ?? "-")</p>
+        }
+        else
+        {
+            <p class="card-text"><strong>@Loc["AllEventsPage_Schedule"]:</strong></p>
+            <ul>
+                @foreach (var sch in Event.Schedule)
+                {
+                    <li>
+                        @Loc[sch.DayOfWeek.ToString()] @sch.StartTime.ToString("HH:mm") - @sch.EndTime.ToString("HH:mm")
+                    </li>
+                }
+            </ul>
+        }
+        <p class="card-text"><strong>@Loc["AllEventsPage_Location"]:</strong> @Event.Location</p>
+        <p class="card-text"><strong>@Loc["AllEventsPage_Organizer"]:</strong> @Event.OrganizerName</p>
         <div id="map-@Event.Id" class="map-container-allevent"></div>
-        <p class="card-text"><strong>@Loc["Price"]:</strong> @(Event.Price != null ? $"{Event.Price} Грн" : "-")</p>
-        <p class="card-text"><strong>@Loc["MaxAttendees"]:</strong> @(Event.MaxAttendees?.ToString() ?? "-")</p>
+        <p class="card-text"><strong>@Loc["AllEventsPage_Price"]:</strong> @(Event.Price != null ? $"{Event.Price}" : "-")</p>
+        <p class="card-text"><strong>@Loc["AllEventsPage_MaxAttendees"]:</strong> @(Event.MaxAttendees?.ToString() ?? "-")</p>
 
         @if (!string.IsNullOrWhiteSpace(Event.Phone) || !string.IsNullOrWhiteSpace(Event.Email)
                 || !string.IsNullOrWhiteSpace(Event.Website) || !string.IsNullOrWhiteSpace(Event.Telegram)
                 || !string.IsNullOrWhiteSpace(Event.Instagram))
         {
             <div class="mt-2">
-                <strong>@Loc["Contacts"]:</strong>
+                <strong>@Loc["AllEventsPage_Contacts"]:</strong>
                 <ul class="list-unstyled mb-0 ms-2">
                     @if (!string.IsNullOrWhiteSpace(Event.Phone))
                     {

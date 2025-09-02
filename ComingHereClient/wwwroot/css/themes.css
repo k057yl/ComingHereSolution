@@ -8,6 +8,7 @@
     --top-bar-bg: #002244;
     --sidebar-bg: #003366;
     --sidebar-text: white;
+    --top-bar-center-background: url('/pic/HeaderBackgroundLight.png');
     /*HomePage*/
     --background-home-content: #ffffff;
     --background-home-map-container: #e8e7e7;
@@ -38,6 +39,7 @@
     --top-bar-bg: #000a1f;
     --sidebar-bg: #393953;
     --sidebar-text: #ddd;
+    --top-bar-center-background: url('/pic/HeaderBackgroundDark.png');
     /*HomePage*/
     --background-home-content: #ababab;
     --background-home-map-container: #9c9a9a;

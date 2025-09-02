@@ -17,15 +17,16 @@
 }
 
 .main-area {
-    flex: 1;
     display: flex;
+    flex: 1;
     overflow: hidden;
 }
 
 .main-content {
-    width: calc(100% - 260px - 260px);
-    overflow-y: auto;
+    flex: 1; /* занимает всё оставшееся место */
+    overflow-y: auto; /* прокрутка, если контент длинный */
     padding: 1rem;
+    box-sizing: border-box;
 }
 
 .main-content-block {
@@ -35,18 +36,18 @@
 }
 
 .top-bar {
-    height: 80px;
+    height: 200px;
+    width: 100%;
     background-color: var(--top-bar-bg);
     color: var(--text-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
     flex-shrink: 0;
 }
 
 .top-left {
-    height: 80px;
+    height: 300px;
     width: 260px;
     display: flex;
     align-items: center;
@@ -54,8 +55,8 @@
 }
 
 .logo-img {
-    height: 80px;
-    width: 120px;
+    height: 300px;
+    width: 260px;
     background-image: var(--logo-image);
     background-size: contain;
     background-repeat: no-repeat;
@@ -63,16 +64,24 @@
 }
 
 .top-center {
-    flex: 1;
+    flex: 1; /* занимает всё оставшееся место */
+    height: 200px; /* высота шапки */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: var(--top-bar-center-background); /* фон */
+    background-size: 100% 100%; /* растягиваем по ширине и высоте */
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .top-right {
+    height: 300px;
     width: 260px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 5px 10px;
-    box-sizing: border-box;
 }
 
 .greeting {
@@ -140,10 +149,10 @@
 /*LR_Panels*/
 .ch-sidebar-left,
 .ch-sidebar-right {
-    width: 260px;
+    width: 260px; /* фиксированная ширина */
+    flex-shrink: 0; /* чтобы не сжимались */
     background-color: var(--sidebar-bg);
     padding: 1rem;
-    flex-shrink: 0;
 }
 
 .ch-nav-wrapper {

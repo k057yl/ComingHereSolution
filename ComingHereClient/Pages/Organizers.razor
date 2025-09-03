@@ -56,14 +56,26 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        organizers = await Http.GetFromJsonAsync<List<EventOrganizerDto>>("api/EventOrganizers");
+        var response = await Http.GetAsync("api/EventOrganizers");
+        if (response.IsSuccessStatusCode)
+        {
+            organizers = await response.Content.ReadFromJsonAsync<List<EventOrganizerDto>>();
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            organizers = new List<EventOrganizerDto>();
+        }
+        else
+        {
+            throw new Exception($"Ошибка загрузки: {response.StatusCode}");
+        }
     }
 
     private async Task DeleteOrganizer(int id)
     {
         if (!await Confirm($"Удалить организатора #{id}?")) return;
 
-        var response = await Http.DeleteAsync($"api/EventOrganizers/{id}");
+        var response = await Http.DeleteAsync($"api/eventorganizers/{id}");
         if (response.IsSuccessStatusCode)
         {
             organizers.RemoveAll(o => o.Id == id);

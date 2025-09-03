@@ -1,9 +1,11 @@
 ﻿:root {
-    /*GeneralSettings*/
-    --bg-color: #ffffff;
-    --main-text-color: #000000;
-    --background-image: url('/pic/background_map_light.png');
-    --logo-image: url('/pic/Logo_v1_light.png');
+    /*Header*/
+    --header-bg-color: #002244;
+    --header-text-color: #ffffff;
+    --header-logo-image: url('/pic/Logo_v1_light.png');
+    /*MainArea*/
+    --main-background-image: url('/pic/background_map_light.png');
+    --main-page-text-color: #000000;
     /*AllPanels*/
     --top-bar-bg: #002244;
     --sidebar-bg: #003366;
@@ -30,11 +32,13 @@
 }
 
 [data-theme='dark'] {
-    /*GeneralSettings*/
-    --bg-color: #121212;
-    --main-text-color: #24444e;
-    --background-image: url('/pic/background_map_dark.png');
-    --logo-image: url('/pic/Logo_v1_dark.png');
+    /*Header*/
+    --header-bg-color: #000a1f;
+    --header-text-color: #f0f0f0;
+    --header-logo-image: url('/pic/Logo_v1_dark.png');
+    /*MainArea*/
+    --main-background-image: url('/pic/background_map_dark.png');
+    --main-page-text-color: #191919;
     /*AllPanels*/
     --top-bar-bg: #000a1f;
     --sidebar-bg: #393953;

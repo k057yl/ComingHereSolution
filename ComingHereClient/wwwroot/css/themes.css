@@ -1,65 +1,59 @@
 ﻿:root {
     /*Header*/
-    --header-bg-color: #002244;
-    --header-text-color: #ffffff;
+    --header-bg: #002244;
+    --header-text: #ffffff;
     --header-logo-image: url('/pic/Logo_v1_light.png');
+    --header-center-bg-image: url('/pic/HeaderBackgroundLight.png');
     /*MainArea*/
-    --main-background-image: url('/pic/background_map_light.png');
-    --main-page-text-color: #000000;
-    /*AllPanels*/
-    --top-bar-bg: #002244;
-    --sidebar-bg: #003366;
-    --sidebar-text: white;
-    --top-bar-center-background: url('/pic/HeaderBackgroundLight.png');
+    --main-bg-image: url('/pic/background_map_light.png');
+    --main-sidebar-container-bg: #003366;
+    --main-sidebar-wrapper-bg: #002244;
+    --main-sidebar-text: #cceeff;
+    --main-sidebar-text-hover: #cc8833;
     /*HomePage*/
-    --background-home-content: #ffffff;
-    --background-home-map-container: #e8e7e7;
-    --general-map-overlay-color: transparent;
-    --background-home-map-legend: #dbe1dd;
+    --home-text: #000000;
+    --home-container-bg: #ffffff;
+    /*Maps*/
+    --home-map-container-bg: #e8e7e7;
+    --home-map-overlay: transparent;
+    --home-map-markers-container-bg: #dbe1dd;
     /*VipContainer*/
-    --wrapper-vip-container-bg-color: #002244;
-    --vip-container-bg-color: #97bfd3;
-    --vip-container-text-color: #262626;
-    /*MainPanels*/
-    --main-panel-bg-color: #002244;
-    --main-panel-text-color: #cceeff;
-    --main-panel-text-hover-color: #cc8833;
-    --main-panel-border-color: #002244;
-    /*test*/
-    --input-bg-color: #ffffff;
-    --input-text-color: #000000;
-    --input-border-color: #000000;
+    --vip-wrapper-bg: #002244;
+    --vip-bg: #97bfd3;
+    --vip-text: #262626;
+    --vip-border: #002244;
+    /*Filters*/
+    --event-filter-field-bg: #ffffff;
+    --event-filter-field-text: #000000;
+    --event-filter-field-border: #000000;
 }
 
 [data-theme='dark'] {
     /*Header*/
-    --header-bg-color: #000a1f;
-    --header-text-color: #f0f0f0;
+    --header-bg: #121212;
+    --header-text: #f0f0f0;
     --header-logo-image: url('/pic/Logo_v1_dark.png');
+    --header-center-bg-image: url('/pic/HeaderBackgroundDark.png');
     /*MainArea*/
-    --main-background-image: url('/pic/background_map_dark.png');
-    --main-page-text-color: #191919;
-    /*AllPanels*/
-    --top-bar-bg: #000a1f;
-    --sidebar-bg: #393953;
-    --sidebar-text: #ddd;
-    --top-bar-center-background: url('/pic/HeaderBackgroundDark.png');
+    --main-bg-image: url('/pic/background_map_dark.png');
+    --main-sidebar-container-bg: #393953;
+    --main-sidebar-wrapper-bg: #000a1f;
+    --main-sidebar-text: #a0dffe;
+    --main-sidebar-text-hover: #009bcd;
     /*HomePage*/
-    --background-home-content: #ababab;
-    --background-home-map-container: #9c9a9a;
-    --general-map-overlay-color: rgba(50, 50, 50, 0.3);
-    --background-home-map-legend: #828181;
+    --home-text: #191919;
+    --home-container-bg: #ababab;
+    /*Maps*/
+    --home-map-container-bg: #9c9a9a;
+    --home-map-overlay: rgba(50, 50, 50, 0.3);
+    --home-map-markers-container-bg: #828181;
     /*VipContainer*/
-    --wrapper-vip-container-bg-color: #000a1f;
-    --vip-container-bg-color: #262626;
-    --vip-container-text-color: #f0f0f0;
-    /*MainPanels*/
-    --main-panel-bg-color: #000a1f;
-    --main-panel-text-color: #a0dffe;
-    --main-panel-text-hover-color: #009bcd;
-    --main-panel-border-color: #009bcd;
-    /*test*/
-    --input-bg-color: #000000;
-    --input-text-color: #d1d1d1;
-    --input-border-color: #009bcd;
+    --vip-wrapper-bg: #000a1f;
+    --vip-bg: #262626;
+    --vip-text: #f0f0f0;
+    --vip-border: #009bcd;
+    /*Filters*/
+    --event-filter-field-bg: #000000;
+    --event-filter-field-text: #d1d1d1;
+    --event-filter-field-border: #009bcd;
 }

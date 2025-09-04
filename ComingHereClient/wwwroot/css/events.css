@@ -32,23 +32,23 @@
         border-color: #bbb;
     }
 
-/*test*/
+/*FilterFields*/
 .ch-filter-container .ch-select {
-    background-color: var(--input-bg-color);
-    color: var(--input-text-color);
-    border: 1px solid var(--input-border-color);
+    background-color: var(--event-filter-field-bg);
+    color: var(--event-filter-field-text);
+    border: 1px solid var(--event-filter-field-border);
 }
 
 .ch-filter-container .ch-date-input {
-    background-color: var(--input-bg-color);
-    color: var(--input-text-color);
-    border: 1px solid var(--input-border-color);
+    background-color: var(--event-filter-field-bg);
+    color: var(--event-filter-field-text);
+    border: 1px solid var(--event-filter-field-border);
     border-radius: 4px;
     padding: 0.5rem;
 }
 
 .ch-radio-label {
-    color: var(--input-text-color);
+    color: var(--event-filter-field-text);
     padding: 0.25rem;
 }
 

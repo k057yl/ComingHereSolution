@@ -3,7 +3,7 @@
 @inject LocalizationService Loc
 @inject NavigationManager Nav
 
-<div class="vip-wrapper">
+<div class="vip-wrapper" @onclick="GoToEvent" style="cursor:pointer">
     <div class="vip-container @(IsFading ? "fade-out" : "")">
         <div class="vip-event">
             <img src="@ImageUrl" class="vip-photo" />
@@ -39,4 +39,12 @@
 
     [Parameter] public EventDto? Event { get; set; }
     [Parameter] public bool IsFading { get; set; }
+
+    private void GoToEvent()
+    {
+        if (Event != null)
+        {
+            Nav.NavigateTo($"/events/{Event.Id}");
+        }
+    }
 }

@@ -1,13 +1,14 @@
 ﻿using ComingHereServer.Data;
 using ComingHereServer.Data.Interfaces;
+using ComingHereServer.Domain.Events.Commands.CreateEvent;
 using ComingHereServer.Interfaces;
 using ComingHereServer.Services;
 using ComingHereShared.DTO.EventDtos;
 using ComingHereShared.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ComingHereServer.Controllers
 {
@@ -16,16 +17,31 @@ namespace ComingHereServer.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
+        private readonly IMediator _mediator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHtmlSanitizingService _sanitizingService;
 
-        public EventsController(IUnitOfWork uow, UserManager<ApplicationUser> userManager, IHtmlSanitizingService sanitizingService)
+        public EventsController(IUnitOfWork uow, IMediator mediator, UserManager<ApplicationUser> userManager, IHtmlSanitizingService sanitizingService)
         {
             _uow = uow;
+            _mediator = mediator;
             _userManager = userManager;
             _sanitizingService = sanitizingService;
         }
 
+        [Authorize(Roles = "Gala")]
+        [HttpPost]
+        public async Task<IActionResult> Create(EventCreateDto dto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var command = new CreateEventCommand(dto, user.Id);
+            var id = await _mediator.Send(command);
+
+            return Ok(new { id });
+        }
+        /*
         [Authorize(Roles = "Gala")]
         [HttpPost]
         public async Task<IActionResult> Create(EventCreateDto dto)
@@ -108,6 +124,7 @@ namespace ComingHereServer.Controllers
 
             return Ok(new { newEvent.Id });
         }
+        */
 
         [Authorize]
         [HttpPost("{eventId}/upload-photo")]

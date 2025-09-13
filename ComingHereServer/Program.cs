@@ -1,5 +1,7 @@
 using ComingHereServer.Data;
 using ComingHereServer.Services;
+using MediatR;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddCorsPolicy();
 builder.Services.AddSessionAndCaching();
 builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 
 builder.Services.AddControllers();
 

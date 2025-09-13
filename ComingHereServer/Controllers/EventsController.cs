@@ -1,4 +1,5 @@
 ﻿using ComingHereServer.Data;
+using ComingHereServer.Data.Interfaces;
 using ComingHereServer.Interfaces;
 using ComingHereServer.Services;
 using ComingHereShared.DTO.EventDtos;
@@ -14,13 +15,13 @@ namespace ComingHereServer.Controllers
     [Route("api/events")]
     public class EventsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHtmlSanitizingService _sanitizingService;
 
-        public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IHtmlSanitizingService sanitizingService)
+        public EventsController(IUnitOfWork uow, UserManager<ApplicationUser> userManager, IHtmlSanitizingService sanitizingService)
         {
-            _context = context;
+            _uow = uow;
             _userManager = userManager;
             _sanitizingService = sanitizingService;
         }
@@ -33,9 +34,10 @@ namespace ComingHereServer.Controllers
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-                return Unauthorized("Пользователь не найден.");
+                return Unauthorized();
 
-            var organizerExists = await _context.EventOrganizers.AnyAsync(o => o.Id == dto.OrganizerId);
+            // Проверка существования организатора
+            bool organizerExists = await _uow.Events.OrganizerExists(dto.OrganizerId);
             if (!organizerExists)
                 return BadRequest("Указанный организатор не существует.");
 
@@ -63,7 +65,7 @@ namespace ComingHereServer.Controllers
                         Instagram = dto.Details.ContactInfo.Instagram
                     }
                 },
-                IsRecurring = dto.IsRecurring,
+                IsRecurring = dto.IsRecurring
             };
 
             if (!dto.IsRecurring)
@@ -72,37 +74,36 @@ namespace ComingHereServer.Controllers
                 newEvent.EndTime = dto.EndTime;
             }
 
-            _context.Events.Add(newEvent);
-            await _context.SaveChangesAsync();
+            await _uow.Events.AddAsync(newEvent);
+            await _uow.SaveChangesAsync();
 
-            if (dto.IsRecurring && dto.Schedules != null && dto.Schedules.Any())
+            // Добавляем расписание, если событие повторяющееся
+            if (dto.IsRecurring && dto.Schedules != null)
             {
-                var schedules = dto.Schedules.Select(s => new EventSchedule
+                foreach (var s in dto.Schedules)
                 {
-                    EventId = newEvent.Id,
-                    DayOfWeek = s.DayOfWeek,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
-                    StartDate = s.StartDate,
-                    EndDate = s.EndDate
-                }).ToList();
-
-                _context.EventSchedules.AddRange(schedules);
-                await _context.SaveChangesAsync();
-            }
-
-            if (dto.ParticipantIds != null && dto.ParticipantIds.Any())
-            {
-                var existingParticipants = await _context.EventParticipants
-                    .Where(p => dto.ParticipantIds.Contains(p.Id))
-                    .ToListAsync();
-
-                foreach (var participant in existingParticipants)
-                {
-                    participant.EventId = newEvent.Id;
+                    await _uow.EventSchedules.AddAsync(new EventSchedule
+                    {
+                        EventId = newEvent.Id,
+                        DayOfWeek = s.DayOfWeek,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime,
+                        StartDate = s.StartDate,
+                        EndDate = s.EndDate
+                    });
                 }
 
-                await _context.SaveChangesAsync();
+                await _uow.SaveChangesAsync();
+            }
+
+            // Привязка участников
+            if (dto.ParticipantIds != null)
+            {
+                var participants = await _uow.EventParticipants.FindAsync(p => dto.ParticipantIds.Contains(p.Id));
+                foreach (var participant in participants)
+                    participant.EventId = newEvent.Id;
+
+                await _uow.SaveChangesAsync();
             }
 
             return Ok(new { newEvent.Id });
@@ -113,12 +114,10 @@ namespace ComingHereServer.Controllers
         public async Task<IActionResult> UploadPhoto(int eventId, IFormFile photo)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized();
+            if (user == null) return Unauthorized();
 
-            var ev = await _context.Events.FindAsync(eventId);
-            if (ev == null)
-                return NotFound("Событие не найдено.");
+            var ev = await _uow.Events.GetByIdAsync(eventId);
+            if (ev == null) return NotFound("Событие не найдено.");
 
             if (photo == null || photo.Length == 0)
                 return BadRequest("Фото не загружено.");
@@ -130,8 +129,8 @@ namespace ComingHereServer.Controllers
             var fileName = $"{eventId}_{photo.FileName}";
             var filePath = Path.Combine(uploadsPath, fileName);
 
-            using (var stream = System.IO.File.Create(filePath))
-                await photo.CopyToAsync(stream);
+            using var stream = System.IO.File.Create(filePath);
+            await photo.CopyToAsync(stream);
 
             var accessiblePath = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
 
@@ -141,8 +140,8 @@ namespace ComingHereServer.Controllers
                 PhotoUrl = accessiblePath
             };
 
-            _context.EventPhotos.Add(photoEntity);
-            await _context.SaveChangesAsync();
+            await _uow.EventPhotos.AddAsync(photoEntity);
+            await _uow.SaveChangesAsync();
 
             return Ok(new { filePath = accessiblePath });
         }
@@ -151,17 +150,8 @@ namespace ComingHereServer.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<EventDto>> GetEvent(int id, [FromQuery] string culture = "uk")
         {
-            var ev = await _context.Events
-                .Include(e => e.Photos)
-                .Include(e => e.Category)
-                .Include(e => e.Details)
-                    .ThenInclude(d => d.ContactInfo)
-                .Include(e => e.Schedules)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (ev == null)
-                return NotFound();
+            var ev = await _uow.Events.GetByIdWithDetailsAsync(id);
+            if (ev == null) return NotFound();
 
             return EventDto.FromEntity(ev, culture);
         }
@@ -171,20 +161,19 @@ namespace ComingHereServer.Controllers
         public async Task<IActionResult> DeleteEvent(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized();
+            if (user == null) return Unauthorized();
 
-            var ev = await _context.Events
-                .Include(e => e.Photos)
-                .Include(e => e.Organizer)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            // Получаем событие с деталями, включая фото и организатора
+            var ev = await _uow.Events.GetByIdWithDetailsAsync(id);
+            if (ev == null) return NotFound();
 
-            if (ev == null)
-                return NotFound();
+            // Удаляем все фото события
+            foreach (var photo in ev.Photos)
+                _uow.EventPhotos.Remove(photo);
 
-            _context.EventPhotos.RemoveRange(ev.Photos);
-            _context.Events.Remove(ev);
-            await _context.SaveChangesAsync();
+            // Удаляем само событие
+            _uow.Events.Remove(ev);
+            await _uow.SaveChangesAsync();
 
             return NoContent();
         }
@@ -222,18 +211,8 @@ namespace ComingHereServer.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllEvents([FromQuery] string culture = "uk")
         {
-            var events = await _context.Events
-                .AsNoTracking()
-                .Include(e => e.Photos)
-                .Include(e => e.Category)
-                .Include(e => e.Details)
-                    .ThenInclude(d => d.ContactInfo)
-                .Include(e => e.Schedules)
-                .Include(e => e.Organizer)
-                .ToListAsync();
-
+            var events = await _uow.Events.GetAllWithDetailsAsync();
             var dtos = events.Select(ev => EventDto.FromEntity(ev, culture)).ToList();
-
             return Ok(dtos);
         }
 
@@ -242,18 +221,8 @@ namespace ComingHereServer.Controllers
         public async Task<IActionResult> GetActiveEvents([FromQuery] string culture = "uk")
         {
             var now = DateTime.UtcNow;
-
-            var events = await _context.Events
-                .Where(e => e.EndTime == null || e.EndTime > now)
-                .AsNoTracking()
-                .Include(e => e.Photos)
-                .Include(e => e.Category)
-                .Include(e => e.Details)
-                .ThenInclude(d => d.ContactInfo)
-                .ToListAsync();
-
+            var events = await _uow.Events.GetActiveWithDetailsAsync(now);
             var dtos = events.Select(ev => EventDto.FromEntity(ev, culture)).ToList();
-
             return Ok(dtos);
         }
 
@@ -262,15 +231,7 @@ namespace ComingHereServer.Controllers
         public async Task<IActionResult> GetRandomVipEvent([FromQuery] string culture = "uk")
         {
             var now = DateTime.UtcNow;
-
-            var vipEvents = await _context.Events
-                .Where(e => e.IsVip && e.StartTime > now)
-                .Include(e => e.Category)
-                .Include(e => e.Details)
-                    .ThenInclude(d => d.ContactInfo)
-                .Include(e => e.Organizer)
-                .Include(e => e.Photos)
-                .ToListAsync();
+            var vipEvents = await _uow.Events.GetVipEventsAsync(now);
 
             // Возвращаем 204 NoContent, если нет VIP-событий.
             // Клиент должен учитывать, что ответ пустой.

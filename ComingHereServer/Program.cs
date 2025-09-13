@@ -1,188 +1,44 @@
-using ComingHereServer;
 using ComingHereServer.Data;
-using ComingHereServer.Interfaces;
 using ComingHereServer.Services;
-using ComingHereShared.Constants;
-using ComingHereShared.Entities;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("GalaConnection")));
-
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-{
-    options.SignIn.RequireConfirmedEmail = true;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
-
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-
-var key = Convert.FromBase64String(jwtSettings["Key"]);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidateAudience = true,
-        ValidAudience = jwtSettings["Audience"],
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ClockSkew = TimeSpan.Zero,
-        RoleClaimType = ClaimTypes.Role
-    };
-});
-
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-
-const string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins(ApiUrls.ClientOrigin)
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
-});
-
-
+// Сервисы и конфигурации
+builder.Services.AddDatabase(builder.Configuration);
+builder.Services.AddDataLayer();
+builder.Services.AddIdentityWithRoles();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddCorsPolicy();
+builder.Services.AddSessionAndCaching();
 builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddControllers();
 
-builder.Services.AddSingleton<IHtmlSanitizingService, HtmlSanitizingService>();
-
 var app = builder.Build();
 
+// Middleware
 if (app.Environment.IsDevelopment())
-{
     app.UseDeveloperExceptionPage();
-}
 
 app.UseHttpsRedirection();
-
-app.UseCors(MyAllowSpecificOrigins);
-
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == "OPTIONS")
-    {
-        Console.WriteLine($"OPTIONS request for {context.Request.Path}");
-    }
-    await next();
-});
-
+app.UseCors("_myAllowSpecificOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseSession();
 
-app.UseStaticFiles();
+// Статика и загрузки
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(app.Environment.ContentRootPath, "uploads")),
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(app.Environment.ContentRootPath, "uploads")
+    ),
     RequestPath = "/uploads"
 });
 
 app.MapControllers();
 
-async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
-{
-    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var config = serviceProvider.GetRequiredService<IConfiguration>();
-
-    string[] roles = new[] { Roles.Gala, Roles.User };
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new IdentityRole(role));
-    }
-
-    var adminEmail = config["AdminUser:Email"];
-    var adminPassword = config["AdminUser:Password"];
-
-    if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
-    {
-        Console.WriteLine("Admin credentials are missing in configuration.");
-        return;
-    }
-
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
-    if (adminUser == null)
-    {
-        adminUser = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
-
-        var result = await userManager.CreateAsync(adminUser, adminPassword);
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(adminUser, Roles.Gala);
-            Console.WriteLine($"Admin user '{adminEmail}' created and added to 'Gala' role.");
-        }
-        else
-        {
-            Console.WriteLine("Failed to create admin user:");
-            foreach (var error in result.Errors)
-                Console.WriteLine($"- {error.Description}");
-        }
-    }
-    else
-    {
-        var rolesOfUser = await userManager.GetRolesAsync(adminUser);
-        if (!rolesOfUser.Contains(Roles.Gala))
-        {
-            await userManager.AddToRoleAsync(adminUser, Roles.Gala);
-            Console.WriteLine($"Admin user '{adminEmail}' added to 'Gala' role.");
-        }
-    }
-
-    var db = serviceProvider.GetRequiredService<ApplicationDbContext>();
-
-    string[] predefinedCategories = { "Art", "Music", "Science", "Workshop", "Theatre", "Gaming", "Education" };
-
-    foreach (var category in predefinedCategories)
-    {
-        if (!await db.Set<EventCategory>().AnyAsync(c => c.Name == category))
-        {
-            db.Set<EventCategory>().Add(new EventCategory { Name = category });
-        }
-    }
-    await db.SaveChangesAsync();
-}
-
+// Сидаем роли, админа и категории
 using var scope = app.Services.CreateScope();
-await SeedRolesAndAdminAsync(scope.ServiceProvider);
+await DatabaseSeeder.SeedAsync(scope.ServiceProvider);
 
 app.Run();

@@ -94,7 +94,7 @@
     private async Task SetRoleAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        isGala = authState.User.IsInRole(Roles.Gala);
+        isGala = authState.User.IsInRole(Roles.GALA);
     }
 
     private void ToggleNavMenu()

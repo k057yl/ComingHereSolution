@@ -53,8 +53,8 @@
                 }
                 else
                 {
-                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Login)'>@Loc["TopPanel_Login"]</button>
-                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.Register)'>@Loc["TopPanel_Register"]</button>
+                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.LOGIN)'>@Loc["TopPanel_Login"]</button>
+                    <button class="custom-btn" @onclick='() => Nav.NavigateTo(ClientRoutes.REGISTER)'>@Loc["TopPanel_Register"]</button>
                 }
             </div>
         </div>
@@ -127,7 +127,7 @@
         isAuthenticated = false;
         userEmail = null;
 
-        Nav.NavigateTo(ClientRoutes.Login, forceLoad: true);
+        Nav.NavigateTo(ClientRoutes.LOGIN, forceLoad: true);
 
         StateHasChanged();
     }

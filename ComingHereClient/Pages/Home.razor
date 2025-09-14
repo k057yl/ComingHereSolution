@@ -52,7 +52,7 @@
 
         try
         {
-            activeEvents = await client.GetFromJsonAsync<List<EventDto>>(ApiRoutes.Event.Active);
+            activeEvents = await client.GetFromJsonAsync<List<EventDto>>(ApiRoutes.Event.ACTIVE);
             Console.WriteLine(string.Join(", ", activeEvents.Select(e => $"{e.Name}: {e.StartTime}")));
         }
         catch (Exception ex)

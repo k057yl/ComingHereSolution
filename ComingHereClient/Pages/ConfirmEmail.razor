@@ -49,13 +49,13 @@ else
     private async Task ConfirmEmailCode()
     {
         var confirmDto = new { UserId = userId, Code = code };
-        var response = await Http.PostAsJsonAsync(ApiRoutes.Account.Confirm, confirmDto);
+        var response = await Http.PostAsJsonAsync(ApiRoutes.Account.CONFIRM, confirmDto);
 
         if (response.IsSuccessStatusCode)
         {
             message = "Email успешно подтверждён! Перенаправляем на страницу входа...";
             await Task.Delay(1500);
-            Nav.NavigateTo(ApiRoutes.Account.Login);
+            Nav.NavigateTo(ApiRoutes.Account.LOGIN);
         }
         else
         {

@@ -34,7 +34,7 @@ public class AuthService
 
     public async Task<bool> Login(string email, string password)
     {
-        var response = await _http.PostAsJsonAsync(ApiRoutes.Account.Login, new { Email = email, Password = password });
+        var response = await _http.PostAsJsonAsync(ApiRoutes.Account.LOGIN, new { Email = email, Password = password });
 
         if (!response.IsSuccessStatusCode)
             return false;

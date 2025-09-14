@@ -72,7 +72,7 @@ namespace ComingHereServer.Services
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                     policy =>
                     {
-                        policy.WithOrigins(ApiUrls.ClientOrigin)
+                        policy.WithOrigins(ApiUrls.CLIENT_ORIGIN)
                               .AllowAnyHeader()
                               .AllowAnyMethod()
                               .AllowCredentials();

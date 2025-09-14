@@ -13,6 +13,7 @@ namespace ComingHereServer.Data.UnitOfWorks
         private IRepository<EventPhoto>? _eventPhotoRepository;
         private IRepository<EventSchedule>? _eventScheduleRepository;
         private IRepository<EventParticipant>? _eventParticipantRepository;
+        private IRepository<ApplicationUser>? _userRepository;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -23,6 +24,7 @@ namespace ComingHereServer.Data.UnitOfWorks
         public IRepository<EventPhoto> EventPhotos => _eventPhotoRepository ??= new GenericRepository<EventPhoto>(_context);
         public IRepository<EventSchedule> EventSchedules => _eventScheduleRepository ??= new GenericRepository<EventSchedule>(_context);
         public IRepository<EventParticipant> EventParticipants => _eventParticipantRepository ??= new GenericRepository<EventParticipant>(_context);
+        public IRepository<ApplicationUser> Users => _userRepository ??= new GenericRepository<ApplicationUser>(_context);
 
         public async Task<int> SaveChangesAsync()
         {

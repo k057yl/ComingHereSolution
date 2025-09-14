@@ -9,6 +9,7 @@ namespace ComingHereServer.Data.Interfaces
         IRepository<EventPhoto> EventPhotos { get; }
         IRepository<EventSchedule> EventSchedules { get; }
         IRepository<EventParticipant> EventParticipants { get; }
+        IRepository<ApplicationUser> Users { get; }
 
         Task<int> SaveChangesAsync();
 

@@ -20,7 +20,7 @@ builder.Services.AddReverseProxy()
                 ClusterId = "main-server",
                 Destinations = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig>
                 {
-                    { "d1", new() { Address = ApiUrls.ServerUrl} }
+                    { "d1", new() { Address = ApiUrls.SERVER_URL} }
                 }
             }
         }

@@ -18,7 +18,7 @@ namespace ComingHereServer.Services
         private static async Task SeedRolesAsync(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            string[] roles = new[] { Roles.Gala, Roles.User };
+            string[] roles = new[] { Roles.GALA, Roles.USER };
             foreach (var role in roles)
                 if (!await roleManager.RoleExistsAsync(role))
                     await roleManager.CreateAsync(new IdentityRole(role));
@@ -39,12 +39,12 @@ namespace ComingHereServer.Services
                 admin = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
                 var result = await userManager.CreateAsync(admin, password);
                 if (result.Succeeded)
-                    await userManager.AddToRoleAsync(admin, Roles.Gala);
+                    await userManager.AddToRoleAsync(admin, Roles.GALA);
             }
             else
             {
-                if (!await userManager.IsInRoleAsync(admin, Roles.Gala))
-                    await userManager.AddToRoleAsync(admin, Roles.Gala);
+                if (!await userManager.IsInRoleAsync(admin, Roles.GALA))
+                    await userManager.AddToRoleAsync(admin, Roles.GALA);
             }
         }
 

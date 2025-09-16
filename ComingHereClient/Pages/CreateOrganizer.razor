@@ -42,6 +42,17 @@
     </div>
 
     <div class="mb-3">
+        <label>Категория</label>
+        <InputSelect class="form-control" @bind-Value="organizer.CategoryId">
+            <option value="">Выберите категорию</option>
+            @foreach (var cat in categories)
+            {
+                <option value="@cat.Id">@cat.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-3">
         <label>Email</label>
         <InputText class="form-control" @bind-Value="organizer.Email" />
     </div>
@@ -118,6 +129,13 @@
     {
         get => organizer.Address.Values.ContainsKey("en") ? organizer.Address.Values["en"] : "";
         set => organizer.Address.Values["en"] = value;
+    }
+
+    private List<OrganizerCategoryDto> categories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await Http.GetFromJsonAsync<List<OrganizerCategoryDto>>("api/OrganizerCategory");
     }
 
     private async Task OnCreateOrganizer()

@@ -37,7 +37,6 @@ else
             <div class="col">
                 <EventCard Event="ev" IsAdmin="isAdmin"
                            OnView="@ViewEvent"
-                           OnEdit="@EditEvent"
                            OnDelete="@DeleteEvent" />
             </div>
         }
@@ -166,11 +165,6 @@ else
     private void ViewEvent(int id)
     {
         Nav.NavigateTo($"/events/{id}");
-    }
-
-    private void EditEvent(int id)
-    {
-        Nav.NavigateTo($"/edit-events/{id}");
     }
 
     private async Task DeleteEvent(int id)

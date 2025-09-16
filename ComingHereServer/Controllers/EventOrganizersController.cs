@@ -1,24 +1,24 @@
-﻿using ComingHereServer.Data;
+﻿using ComingHereServer.Data.Interfaces;
+using ComingHereShared.Constants;
 using ComingHereShared.DTO.OrganizerDtos;
 using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ComingHereServer.Controllers;
 
 [ApiController]
 [Route("api/eventorganizers")]
-[Authorize(Roles = "Gala")]
+[Authorize(Roles = Roles.GALA)]
 public class EventOrganizersController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitOfWork _uow;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public EventOrganizersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public EventOrganizersController(IUnitOfWork uow, UserManager<ApplicationUser> userManager)
     {
-        _context = context;
+        _uow = uow;
         _userManager = userManager;
     }
 
@@ -32,11 +32,6 @@ public class EventOrganizersController : ControllerBase
                 return BadRequest("Пользователь не найден");
         }
 
-        else
-        {
-            dto.ApplicationUserId = null;
-        }
-
         var organizer = new EventOrganizer
         {
             ApplicationUserId = dto.ApplicationUserId,
@@ -47,20 +42,21 @@ public class EventOrganizersController : ControllerBase
             Email = dto.Email,
             Website = dto.Website,
             Telegram = dto.Telegram,
-            Instagram = dto.Instagram
+            Instagram = dto.Instagram,
+            CategoryId = dto.CategoryId
         };
 
-        _context.EventOrganizers.Add(organizer);
-        await _context.SaveChangesAsync();
+        await _uow.EventOrganizers.AddAsync(organizer);
+        await _uow.SaveChangesAsync();
 
         return Ok(new { organizer.Id });
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<EventOrganizerDto>>> GetAll()
     {
-        var organizers = await _context.EventOrganizers
-            .ToListAsync();
+        var organizers = await _uow.EventOrganizers.GetAllAsync();
 
         var result = organizers.Select(o => new EventOrganizerDto
         {
@@ -82,7 +78,7 @@ public class EventOrganizersController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, EventOrganizerCreateDto dto)
     {
-        var organizer = await _context.EventOrganizers.FindAsync(id);
+        var organizer = await _uow.EventOrganizers.GetByIdAsync(id);
         if (organizer == null)
             return NotFound("Организатор не найден");
 
@@ -94,8 +90,9 @@ public class EventOrganizersController : ControllerBase
         organizer.Website = dto.Website;
         organizer.Telegram = dto.Telegram;
         organizer.Instagram = dto.Instagram;
+        organizer.CategoryId = dto.CategoryId;
 
-        await _context.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
 
         return Ok();
     }
@@ -103,9 +100,8 @@ public class EventOrganizersController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var organizer = await _context.EventOrganizers
-            .Include(o => o.Events)
-            .FirstOrDefaultAsync(o => o.Id == id);
+        var organizer = await _uow.EventOrganizers
+            .GetByIdWithEventsAsync(id);
 
         if (organizer == null)
             return NotFound("Организатор не найден");
@@ -113,8 +109,8 @@ public class EventOrganizersController : ControllerBase
         if (organizer.Events.Any())
             return BadRequest("Нельзя удалить организатора, у которого есть события");
 
-        _context.EventOrganizers.Remove(organizer);
-        await _context.SaveChangesAsync();
+        _uow.EventOrganizers.Remove(organizer);
+        await _uow.SaveChangesAsync();
 
         return NoContent();
     }

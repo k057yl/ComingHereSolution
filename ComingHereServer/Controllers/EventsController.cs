@@ -1,7 +1,6 @@
 ﻿using ComingHereServer.Data.Interfaces;
 using ComingHereServer.Domain.Events.Commands.CreateEvent;
 using ComingHereServer.Domain.Events.Commands.DeleteEvent;
-using ComingHereServer.Domain.Events.Commands.UpdateEvent;
 using ComingHereServer.Domain.Events.Commands.UploadPhoto;
 using ComingHereServer.Domain.Events.Queries.GetActiveEvent;
 using ComingHereServer.Domain.Events.Queries.GetAllEvent;
@@ -77,15 +76,6 @@ namespace ComingHereServer.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = Roles.GALA)]
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateEvent(int id, [FromBody] EventCreateDto dto)
-        {
-            var userId = User?.FindFirst("sub")?.Value ?? "";
-            var result = await _mediator.Send(new UpdateEventCommand(id, dto, userId));
-            return result ? NoContent() : NotFound();
-        }
-
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAllEvents([FromQuery] string culture = "uk")
@@ -110,5 +100,6 @@ namespace ComingHereServer.Controllers
             if (dto == null) return NoContent();
             return Ok(dto);
         }
+
     }
 }

@@ -10,10 +10,13 @@ namespace ComingHereServer.Data.UnitOfWorks
         private readonly ApplicationDbContext _context;
 
         private IEventRepository? _eventRepository;
+        private IEventCategoryRepository? _eventCategoryRepository;
+        private IEventOrganizerRepository? _eventOrganizerRepository;
         private IRepository<EventPhoto>? _eventPhotoRepository;
         private IRepository<EventSchedule>? _eventScheduleRepository;
         private IRepository<EventParticipant>? _eventParticipantRepository;
         private IRepository<ApplicationUser>? _userRepository;
+        private IRepository<OrganizerCategory>? _organizerCategoryRepository;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -21,10 +24,13 @@ namespace ComingHereServer.Data.UnitOfWorks
         }
 
         public IEventRepository Events => _eventRepository ??= new EventRepository(_context);
+        public IEventCategoryRepository EventCategories => _eventCategoryRepository ??= new EventCategoryRepository(_context);
+        public IEventOrganizerRepository EventOrganizers => _eventOrganizerRepository ??= new EventOrganizerRepository(_context);
         public IRepository<EventPhoto> EventPhotos => _eventPhotoRepository ??= new GenericRepository<EventPhoto>(_context);
         public IRepository<EventSchedule> EventSchedules => _eventScheduleRepository ??= new GenericRepository<EventSchedule>(_context);
         public IRepository<EventParticipant> EventParticipants => _eventParticipantRepository ??= new GenericRepository<EventParticipant>(_context);
         public IRepository<ApplicationUser> Users => _userRepository ??= new GenericRepository<ApplicationUser>(_context);
+        public IRepository<OrganizerCategory> OrganizerCategories => _organizerCategoryRepository ??= new GenericRepository<OrganizerCategory>(_context);
 
         public async Task<int> SaveChangesAsync()
         {

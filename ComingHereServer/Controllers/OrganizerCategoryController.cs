@@ -61,7 +61,13 @@ namespace ComingHereServer.Controllers
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _context.OrganizerCategories.FindAsync(id);
-            if (category == null) return NotFound();
+            if (category == null)
+                return NotFound();
+
+            // Проверяем, есть ли организаторы с этой категорией
+            var hasOrganizers = await _context.EventOrganizers.AnyAsync(o => o.CategoryId == id);
+            if (hasOrganizers)
+                return BadRequest("Нельзя удалить категорию, которая используется организаторами.");
 
             _context.OrganizerCategories.Remove(category);
             await _context.SaveChangesAsync();

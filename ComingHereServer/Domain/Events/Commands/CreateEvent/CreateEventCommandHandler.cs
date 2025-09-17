@@ -1,5 +1,5 @@
 ﻿using ComingHereServer.Data.Interfaces;
-using ComingHereServer.Interfaces;
+using ComingHereServer.Services.Interfaces;
 using ComingHereShared.Entities;
 using MediatR;
 

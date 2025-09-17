@@ -1,5 +1,5 @@
 ﻿using ComingHereServer.Data;
-using ComingHereServer.Interfaces;
+using ComingHereServer.Services.Interfaces;
 using ComingHereShared.Constants;
 using ComingHereShared.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

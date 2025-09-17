@@ -311,17 +311,53 @@
 
     private async Task HandleValidSubmit()
     {
+        // Проверяем обязательные поля локализованных строк
+        if (string.IsNullOrWhiteSpace(NameUk) || string.IsNullOrWhiteSpace(NameEn))
+        {
+            Console.WriteLine("⚠️ Укажи название события на обоих языках");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(DescriptionUk) || string.IsNullOrWhiteSpace(DescriptionEn))
+        {
+            Console.WriteLine("⚠️ Укажи описание события на обоих языках");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(LocationUk) || string.IsNullOrWhiteSpace(LocationEn))
+        {
+            Console.WriteLine("⚠️ Укажи место события на обоих языках");
+            return;
+        }
+
+        // Проверяем обязательные int-поля
+        if (newEvent.CategoryId == 0)
+        {
+            Console.WriteLine("⚠️ Выбери категорию события");
+            return;
+        }
+
+        if (newEvent.OrganizerId == 0)
+        {
+            Console.WriteLine("⚠️ Выбери организатора события");
+            return;
+        }
+
+        // Проверка токена
         if (string.IsNullOrEmpty(authToken))
         {
             Console.WriteLine("⚠️ Токен не найден в localStorage.");
             return;
         }
 
+        // Отправка на сервер
+        var client = HttpClientFactory.CreateClient("AuthorizedClient");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
+
         Console.WriteLine("📤 Отправляем DTO:");
         Console.WriteLine(JsonSerializer.Serialize(newEvent));
 
-        var client = HttpClientFactory.CreateClient("AuthorizedClient");
-        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
         var response = await client.PostAsJsonAsync("api/events", newEvent);
         if (response.IsSuccessStatusCode)
         {

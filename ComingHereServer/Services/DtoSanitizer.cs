@@ -1,6 +1,6 @@
 ﻿using ComingHereShared.DTO.EventDtos;
 using ComingHereShared.Entities;
-using ComingHereServer.Interfaces;
+using ComingHereServer.Services.Interfaces;
 
 namespace ComingHereServer.Services
 {

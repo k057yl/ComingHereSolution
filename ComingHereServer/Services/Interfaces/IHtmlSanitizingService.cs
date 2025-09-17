@@ -1,4 +1,4 @@
-﻿namespace ComingHereServer.Interfaces
+﻿namespace ComingHereServer.Services.Interfaces
 {
     public interface IHtmlSanitizingService
     {

@@ -1,5 +1,5 @@
 ﻿using ComingHereServer.Data.Interfaces;
-using ComingHereServer.Interfaces;
+using ComingHereServer.Services.Interfaces;
 
 namespace ComingHereServer.Domain.Events.Commands
 {

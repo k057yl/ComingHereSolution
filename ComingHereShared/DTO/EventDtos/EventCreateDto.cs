@@ -5,8 +5,11 @@ namespace ComingHereShared.DTO.EventDtos
 {
     public class EventCreateDto
     {
+        [Required(ErrorMessage = "Cannot be empty")]
         public LocalizedString Name { get; set; } = new();
+        [Required(ErrorMessage = "Cannot be empty")]
         public LocalizedString Description { get; set; } = new();
+        [Required(ErrorMessage = "Cannot be empty")]
         public LocalizedString Location { get; set; } = new();
 
         [Required]
@@ -21,7 +24,9 @@ namespace ComingHereShared.DTO.EventDtos
         public double Longitude { get; set; }
 
         // Категория и организатор
+        //[Required(ErrorMessage = "Category cannot be empty")]
         public int CategoryId { get; set; }
+        //[Required(ErrorMessage = "Organizer cannot be empty")]
         public int OrganizerId { get; set; }
 
         // Участники

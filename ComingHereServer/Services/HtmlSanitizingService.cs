@@ -1,4 +1,4 @@
-﻿using ComingHereServer.Interfaces;
+﻿using ComingHereServer.Services.Interfaces;
 using Ganss.Xss;
 
 namespace ComingHereServer.Services
